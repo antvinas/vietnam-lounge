@@ -2,36 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== 디자인 토큰 (가이드라인 V1 반영) ===== */
 :root {
+	/* bg */
 	--bg-base: #ffffff;
-	--bg-muted: #F7F8FA;
-	--bg-night: #0B1220;
-	--fg-title: #0D1220;
-	--fg-body: #2B3345;
-	--fg-muted: #6B7380;
-	--fg-onNight: #E7EFF9;
-	--brand-primary: #18A999;
-	--brand-secondary: #0E7C86;
-	--brand-accent: #FFC857;
-	--state-success: #2FBF71;
-	--state-warn: #F4A261;
-	--state-error: #E76F51;
-	--state-info: #3A86FF;
-	--border-subtle: #E6EAF0;
-	--border-strong: #C8D1DB;
+	--bg-muted: #f7f8fa;
+	--bg-night: #0b1220;
+	/* fg */
+	--fg-title: #0d1220;
+	--fg-body: #2b3345;
+	--fg-muted: #6b7380;
+	--fg-onNight: #e7eff9;
+	/* brand */
+	--brand-primary: #18a999;
+	--brand-secondary: #0e7c86;
+	--brand-accent: #ffc857;
+	/* state */
+	--state-success: #2fbf71;
+	--state-warn: #f4a261;
+	--state-error: #e76f51;
+	--state-info: #3a86ff;
+	/* border */
+	--border-subtle: #e6eaf0;
+	--border-strong: #c8d1db;
 }
 
+/* 다크(밤) 테마 */
 .dark {
-	--bg-base: #0B1220;
+	--bg-base: #0b1220;
 	--bg-muted: #10192d;
-	--fg-title: #E7EFF9;
+	--fg-title: #e7eff9;
 	--fg-body: #cfd7e6;
 	--fg-muted: #9aa6bf;
-	--fg-onNight: #E7EFF9;
+	--fg-onNight: #e7eff9;
 	--border-subtle: #1f2a44;
 	--border-strong: #31415f;
 }
 
-html, body, #root {
+html,
+body,
+#root {
 	height: 100%;
 }

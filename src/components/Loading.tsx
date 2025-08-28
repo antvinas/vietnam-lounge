@@ -5,5 +5,5 @@ export default function Loading() {
             <div className="h-28 w-full animate-pulse rounded bg-border-subtle" />
             <div className="h-28 w-full animate-pulse rounded bg-border-subtle" />
         </div>
-    )
+    );
 }

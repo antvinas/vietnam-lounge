@@ -1,50 +1,43 @@
-import { Suspense, useEffect, useState, lazy } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import AdultGate from './components/AdultGate'
-import Loading from './components/Loading'
-import AppProvider from './context/AppContext'
-
-const Home = lazy(() => import('./pages/Home'))
-const Places = lazy(() => import('./pages/Places'))
-const Plans = lazy(() => import('./pages/Plans'))
-const Community = lazy(() => import('./pages/Community'))
-const Events = lazy(() => import('./pages/Events'))
-const My = lazy(() => import('./pages/My'))
-const Adult = lazy(() => import('./pages/Adult'))
-const PlaceDetail = lazy(() => import('./pages/PlaceDetail'))
-const NotFound = lazy(() => import('./pages/NotFound'))
+import { Suspense, useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import { routes } from "@/routes";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import AdultGate from "@/components/AdultGate";
+import Loading from "@/components/Loading";
+import { useApp } from "@/context/AppContext";
 
 export default function App() {
-    const [adultOpen, setAdultOpen] = useState(false)
+    const [adultOpen, setAdultOpen] = useState(false);
+    const { adultAllowed, setAdultAllowed } = useApp();
+
+    // 앱 최초 진입 시 성인게이트 1회만 노출(동의 안한 경우)
     useEffect(() => {
-        const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-        document.documentElement.classList.toggle('dark', prefersDark)
-    }, [])
+        if (!adultAllowed) setAdultOpen(true);
+    }, [adultAllowed]);
 
     return (
-        <AppProvider>
-            <div className="min-h-screen bg-bg-base">
-                <Header onOpenAdult={() => setAdultOpen(true)} />
-                <main className="mx-auto max-w-6xl px-4 py-6">
-                    <Suspense fallback={<Loading />}>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/places" element={<Places />} />
-                            <Route path="/place/:id" element={<PlaceDetail />} />
-                            <Route path="/plans" element={<Plans />} />
-                            <Route path="/community" element={<Community />} />
-                            <Route path="/events" element={<Events />} />
-                            <Route path="/my" element={<My />} />
-                            <Route path="/adult" element={<Adult />} />
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
-                    </Suspense>
-                </main>
-                <Footer />
-                <AdultGate open={adultOpen} onOpenChange={setAdultOpen} />
-            </div>
-        </AppProvider>
-    )
+        <div className="min-h-screen bg-bg-base text-fg-body">
+            <Header onOpenAdult={() => setAdultOpen(true)} />
+            <main className="mx-auto max-w-6xl px-4 py-6">
+                <Suspense fallback={<Loading />}>
+                    <Routes>
+                        {routes.map(({ path, Component }) => (
+                            <Route key={path} path={path} element={<Component />} />
+                        ))}
+                    </Routes>
+                </Suspense>
+            </main>
+            <Footer />
+
+            <AdultGate
+                open={adultOpen}
+                onOpenChange={(open) => {
+                    setAdultOpen(open);
+                    // Adult 페이지 진입 버튼에서 동의 처리 → AdultGate 내부 링크에서 처리됨.
+                    // 여기서는 닫기만 담당.
+                }}
+            />
+        </div>
+    );
 }
