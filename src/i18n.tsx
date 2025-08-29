@@ -9,7 +9,7 @@ const RES: Resources = {
     ko: {
         home_hot: "오늘의 도시별 핫스팟",
         new_reviews: "신규 후기",
-        places: "장소",
+        places: "여행 스팟",
         plans: "플랜",
         community: "커뮤니티",
         events: "이벤트",
