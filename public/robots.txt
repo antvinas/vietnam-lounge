@@ -1,5 +1,6 @@
-# public/robots.txt
 User-agent: *
+Disallow: /admin/
+Disallow: /adult/
 Allow: /
 
-Sitemap: /sitemap.xml
+Sitemap: https://YOUR_DOMAIN/sitemap.xml

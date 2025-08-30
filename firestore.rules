@@ -1,28 +1,40 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{db}/documents {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function hasRole(role) {
+      return isSignedIn() && role in request.auth.token.roles;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
 
-    // 공개 읽기 허용, 쓰기 제한
+    match /users/{uid} {
+      allow read: if isOwner(uid) || hasRole('admin');
+      allow create: if isOwner(uid);
+      allow update, delete: if isOwner(uid) || hasRole('admin');
+    }
+
     match /spots/{spotId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null
-        && exists(/databases/$(db)/documents/users/$(request.auth.uid))
-        && get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow create: if hasRole('editor') || hasRole('admin');
+      allow update, delete: if hasRole('editor') || hasRole('admin');
     }
 
-    // 리뷰: 본인 쓰기 허용, 수정/삭제는 본인만
-    match /spots/{spotId}/spotReviews/{reviewId} {
+    match /spots/{spotId}/reviews/{reviewId} {
       allow read: if true;
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update, delete: if (request.resource.data.authorUid == request.auth.uid)
+                            || hasRole('moderator') || hasRole('admin');
     }
 
-    // 유저 프로필 최소허용
-    match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if request.auth != null && request.auth.uid == uid;
+    match /reports/{id} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if hasRole('moderator') || hasRole('admin');
+    }
+
+    match /admin/{doc=**} {
+      allow read, write: if hasRole('admin');
     }
   }
 }

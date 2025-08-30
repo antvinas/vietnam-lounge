@@ -1,38 +1,41 @@
-// public/sw.js
-const CACHE = "vl-cache-v1";
-const OFFLINE_URL = "/offline.html";
-
-// 캐싱할 기본 파일
-const ASSETS = ["/", OFFLINE_URL, "/manifest.webmanifest"];
-
-self.addEventListener("install", (event) => {
-    event.waitUntil(
-        caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-    );
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+  event.waitUntil(caches.open('static-v1').then(cache => cache.addAll(['/offline.html'])));
 });
 
-self.addEventListener("activate", (event) => {
-    event.waitUntil(
-        caches.keys().then((keys) =>
-            Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-        ).then(() => self.clients.claim())
-    );
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", (event) => {
-    const req = event.request;
-    if (req.method !== "GET") return;
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
 
-    event.respondWith(
-        caches.match(req).then((cached) => {
-            if (cached) return cached;
-            return fetch(req)
-                .then((res) => {
-                    const copy = res.clone();
-                    caches.open(CACHE).then((cache) => cache.put(req, copy));
-                    return res;
-                })
-                .catch(() => caches.match(OFFLINE_URL));
-        })
-    );
+  // Network-first for navigation
+  if (req.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(req);
+        return fresh;
+      } catch (e) {
+        const cache = await caches.open('static-v1');
+        return (await cache.match('/offline.html')) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // Stale-while-revalidate for images and static assets
+  if (req.destination === 'image' || /\.(?:js|css|woff2)$/.test(url.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open('assets-v1');
+      const cached = await cache.match(req);
+      const fetchPromise = fetch(req).then((networkResponse) => {
+        cache.put(req, networkResponse.clone());
+        return networkResponse;
+      }).catch(() => cached);
+      return cached || fetchPromise;
+    })());
+    return;
+  }
 });
