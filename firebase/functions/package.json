@@ -1,0 +1,43 @@
+{
+  "name": "functions",
+  "private": true,
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rimraf lib && tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "seed:spots": "ts-node ../../scripts/seed/seed.spots.ts",
+    "seed:boards": "ts-node ../../scripts/seed/seed.boards.ts",
+    "tool:migrate-slugs": "ts-node ../../scripts/tools/migrate-slugs.ts"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1692.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.9.0",
+    "firebase-functions": "^4.4.1",
+    "helmet": "^7.0.0",
+    "joi": "^17.9.2",
+    "pdfkit": "^0.13.0",
+    "sharp": "^0.32.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/pdfkit": "^0.12.10",
+    "@types/sharp": "^0.32.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint": "^8.42.0",
+    "eslint-plugin-import": "^2.27.5",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.1.3"
+  }
+}

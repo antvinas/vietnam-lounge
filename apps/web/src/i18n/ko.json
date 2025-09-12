@@ -1,0 +1,27 @@
+
+{
+  "header": {
+    "spots": "명소",
+    "plan": "여행 계획",
+    "community": "커뮤니티",
+    "events": "이벤트",
+    "clubs": "클럽",
+    "bars": "바",
+    "karaoke": "가라오케",
+    "adultCommunity": "성인 커뮤니티",
+    "daylife": "주간",
+    "nightlife": "야간",
+    "mypage": "마이페이지",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "register": "회원가입"
+  },
+  "footer": {
+    "navigation": "네비게이션",
+    "legal": "법률 정보",
+    "followUs": "소셜 미디어",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "contact": "문의하기"
+  }
+}

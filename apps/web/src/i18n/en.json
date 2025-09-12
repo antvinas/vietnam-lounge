@@ -1,0 +1,27 @@
+
+{
+  "header": {
+    "spots": "Spots",
+    "plan": "Plan",
+    "community": "Community",
+    "events": "Events",
+    "clubs": "Clubs",
+    "bars": "Bars",
+    "karaoke": "Karaoke",
+    "adultCommunity": "Adult Community",
+    "daylife": "Daylife",
+    "nightlife": "Nightlife",
+    "mypage": "My Page",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "legal": "Legal",
+    "followUs": "Follow Us",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "contact": "Contact Us"
+  }
+}
