@@ -1,5 +1,5 @@
 
-import { collection, getDocs, doc, getDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Event } from "../types/event";
 
@@ -9,7 +9,7 @@ const eventsCollection = collection(db, "events");
  * Fetches all events from the Firestore 'events' collection.
  */
 export const getEvents = async (): Promise<Event[]> => {
-  
+
   try {
     const eventSnapshot = await getDocs(eventsCollection);
     const eventList = eventSnapshot.docs.map(doc => ({
@@ -27,7 +27,7 @@ export const getEvents = async (): Promise<Event[]> => {
  * Fetches a single event by its ID from Firestore.
  */
 export const getEventById = async (id: string): Promise<Event | null> => {
-  
+
   try {
     const eventDoc = doc(db, "events", id);
     const eventSnapshot = await getDoc(eventDoc);
@@ -48,14 +48,24 @@ export const getEventById = async (id: string): Promise<Event | null> => {
  * Adds a new event to the Firestore 'events' collection.
  */
 export const addEvent = async (event: Omit<Event, 'id'>): Promise<string> => {
-    
-    try {
-        const docRef = await addDoc(eventsCollection, event);
-        return docRef.id;
-    } catch (error) {
-        console.error("Error adding event to Firestore:", error);
-        throw new Error('Failed to add event');
-    }
+
+  try {
+    const docRef = await addDoc(eventsCollection, event);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding event to Firestore:", error);
+    throw new Error('Failed to add event');
+  }
+};
+
+export const deleteEvent = async (id: string): Promise<void> => {
+  try {
+    const eventDoc = doc(db, "events", id);
+    await deleteDoc(eventDoc);
+  } catch (error) {
+    console.error(`Error deleting event ${id}:`, error);
+    throw new Error('Failed to delete event');
+  }
 };
 
 /**

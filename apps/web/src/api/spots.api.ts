@@ -26,7 +26,7 @@ export interface Review {
   avatar: string;
   rating: number;
   comment: string;
-  timestamp: string; 
+  timestamp: string;
 }
 
 /**
@@ -53,28 +53,33 @@ export const getSpotById = async (id: string): Promise<Spot | null> => {
   }
 };
 
+export const addSpot = async (spot: Omit<Spot, 'id' | 'rating' | 'isFavorited'>): Promise<Spot> => {
+  const response = await api.post('/spots', spot);
+  return response.data;
+};
+
 /**
  * Fetches all reviews for a specific spot.
  */
 export const fetchReviewsBySpotId = async (spotId: string): Promise<Review[]> => {
-    const response = await api.get(`/spots/${spotId}/reviews`);
-    return response.data;
+  const response = await api.get(`/spots/${spotId}/reviews`);
+  return response.data;
 };
 
 /**
  * Adds a review to a specific spot.
  */
 export const addReview = async (spotId: string, rating: number, comment: string, author: string): Promise<Review> => {
-    const response = await api.post(`/spots/${spotId}/reviews`, { rating, comment, author });
-    return response.data;
+  const response = await api.post(`/spots/${spotId}/reviews`, { rating, comment, author });
+  return response.data;
 };
 
 /**
  * Toggles the favorite status of a spot for the current user.
  */
 export const toggleFavoriteStatus = async (spotId: string, isFavorited: boolean): Promise<Spot> => {
-    const response = await api.post(`/spots/${spotId}/favorite`, { isFavorited });
-    return response.data;
+  const response = await api.post(`/spots/${spotId}/favorite`, { isFavorited });
+  return response.data;
 };
 
 /**

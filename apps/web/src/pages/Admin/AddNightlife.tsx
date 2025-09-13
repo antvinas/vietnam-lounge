@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addNightlife } from '../../api/nightlife.api';
+// import { addNightlife } from '../../api/nightlife.api'; // This file doesn't exist yet
 import { Nightlife } from '../../types/nightlife';
 
 const AddNightlife = () => {
@@ -27,9 +27,18 @@ const AddNightlife = () => {
 
     const newNightlife: Omit<Nightlife, 'id'> = { name, description, address, category };
 
+    // Temporarily disabled until the API is ready
+    setError('API endpoint not configured. Submission is disabled.');
+    setIsSubmitting(false);
+
+    /* --- Temporarily disabled code ---
     try {
-      const newNightlifeId = await addNightlife(newNightlife);
-      setSuccess(`Successfully added new nightlife spot with ID: ${newNightlifeId}`);
+      // const newNightlifeId = await addNightlife(newNightlife);
+      // setSuccess(`Successfully added new nightlife spot with ID: ${newNightlifeId}`);
+      
+      // Mock success for UI testing
+      setSuccess('Mock Success: Nightlife spot would be added here.');
+
       // Clear form
       setName('');
       setDescription('');
@@ -43,6 +52,7 @@ const AddNightlife = () => {
     } finally {
       setIsSubmitting(false);
     }
+    */
   };
 
   return (
@@ -52,11 +62,11 @@ const AddNightlife = () => {
         <form onSubmit={handleSubmit}>
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
           {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{success}</div>}
-          
+
           <div className="mb-4">
             <label htmlFor="name" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">Name</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -66,7 +76,7 @@ const AddNightlife = () => {
 
           <div className="mb-4">
             <label htmlFor="description" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">Description</label>
-            <textarea 
+            <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -77,8 +87,8 @@ const AddNightlife = () => {
 
           <div className="mb-4">
             <label htmlFor="address" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">Address</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               id="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -88,7 +98,7 @@ const AddNightlife = () => {
 
           <div className="mb-6">
             <label htmlFor="category" className="block text-gray-700 dark:text-gray-300 font-medium mb-2">Category</label>
-            <select 
+            <select
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -102,8 +112,8 @@ const AddNightlife = () => {
           </div>
 
           <div className="text-right">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
               className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >

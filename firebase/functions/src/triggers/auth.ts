@@ -1,36 +1,32 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import {logger} from '../utils/logger';
 
-const db = admin.firestore();
+import * as admin from 'firebase-admin';
+import * as functions from 'firebase-functions/v1';
 
 /**
- * Triggered when a new user is created in Firebase Authentication.
+ * Triggered on new user creation.
  * Creates a corresponding user profile document in Firestore.
+ * @param {functions.auth.UserRecord} user The user record.
+ * @returns {Promise<void>}
  */
-export const handleCreateUser = async (user: admin.auth.UserRecord) => {
-  const {uid, email, displayName, photoURL} = user;
+export const handleCreateUser = async (user: functions.auth.UserRecord): Promise<void> => {
+  const { uid, email, displayName, photoURL } = user;
 
-  logger.info(`New user creating profile: ${uid}`);
-
-  const userRef = db.collection('users').doc(uid);
-
-  const newUserProfile = {
+  // Basic user profile data
+  const userProfile = {
     email: email || '',
     displayName: displayName || 'Unnamed User',
-    photoURL: photoURL || null,
-    bio: '',
+    photoURL: photoURL || '',
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    level: 1,
-    xp: 0,
-    // Add any other initial fields for a new user
+    roles: ['user'], // Default role
+    reputation: 0, // Starting reputation
+    lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+    // Add any other initial fields you need
   };
 
   try {
-    await userRef.set(newUserProfile);
-    logger.info(`Successfully created profile for user: ${uid}`);
+    await admin.firestore().collection('users').doc(uid).set(userProfile);
+    console.log(`Successfully created profile for user: ${uid}`);
   } catch (error) {
-    logger.error(`Error creating profile for user ${uid}:`, error);
+    console.error(`Failed to create profile for user: ${uid}`, error);
   }
 };

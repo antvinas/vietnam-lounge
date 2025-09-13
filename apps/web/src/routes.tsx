@@ -12,8 +12,8 @@ import EventList from './pages/Events/EventList';
 import EventDetail from './pages/Events/EventDetail';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import Nightlife from './pages/Nightlife/Nightlife';
-import NightlifeDetail from './pages/Nightlife/NightlifeDetail';
+// import Nightlife from './pages/Nightlife/Nightlife';
+// import NightlifeDetail from './pages/Nightlife/NightlifeDetail';
 import Profile from './pages/User/Profile';
 import MyPageHome from './pages/MyPage/MyPageHome';
 import MyCoupons from './pages/MyPage/MyCoupons';
@@ -30,11 +30,11 @@ import { useStore as useAdultStore } from './store/adult.store';
 import { useAuthStore } from './store/auth.store';
 import Loading from './components/common/Loading';
 
-const AdultHome = lazy(() => import('./pages/Adult/AdultHome'));
-const AdultVerify = lazy(() => import('./pages/Adult/AdultVerify'));
-const Coupons = lazy(() => import('./pages/Adult/Coupons'));
-const AdultSpotDetail = lazy(() => import('./pages/Adult/AdultSpotDetail'));
-const CategoryList = lazy(() => import('./pages/Adult/CategoryList'));
+// const AdultHome = lazy(() => import('./pages/Adult/AdultHome'));
+// const AdultVerify = lazy(() => import('./pages/Adult/AdultVerify'));
+// const Coupons = lazy(() => import('./pages/Adult/Coupons'));
+// const AdultSpotDetail = lazy(() => import('./pages/Adult/AdultSpotDetail'));
+// const CategoryList = lazy(() => import('./pages/Adult/CategoryList'));
 
 
 const AgeProtectedRoute = () => {
@@ -47,15 +47,15 @@ const AgeProtectedRoute = () => {
 
 const AuthProtectedRoute = () => {
   const { isLoggedIn } = useAuthStore();
-  if(!isLoggedIn) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" replace />
   }
-  return <Outlet/>;
+  return <Outlet />;
 }
 
 const AdminProtectedRoute = () => {
   const { user } = useAuthStore();
-  if(!user || user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return <Navigate to="/" replace />
   }
   return <Outlet />;
@@ -76,11 +76,11 @@ export const Routes = () => {
           <Route path="/events/:eventId" element={<EventDetail />} />
 
           {/* Community Routes */}
-          <Route path="/community" element={<Outlet/>}>
-              <Route index element={<BoardList />} />
-              <Route path="new" element={<NewPost />} />
-              <Route path="edit/:postId" element={<EditPost />} />
-              <Route path="post/:postId" element={<PostDetail />} />
+          <Route path="/community" element={<Outlet />}>
+            <Route index element={<BoardList />} />
+            <Route path="new" element={<NewPost />} />
+            <Route path="edit/:postId" element={<EditPost />} />
+            <Route path="post/:postId" element={<PostDetail />} />
           </Route>
 
           {/* Authenticated Routes */}
@@ -94,33 +94,33 @@ export const Routes = () => {
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>
-          
+
           {/* Age Verification Route */}
-          <Route path="/adult-verify" element={<AdultVerify />} />
+          {/* <Route path="/adult-verify" element={<AdultVerify />} /> */}
 
           {/* Protected Routes for Adult Content */}
-          <Route path="/adult" element={<AgeProtectedRoute />}>
+          {/* <Route path="/adult" element={<AgeProtectedRoute />}>
               <Route index element={<AdultHome />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="spots/:spotId" element={<AdultSpotDetail />} />
               <Route path=":category" element={<CategoryList />} />
               <Route path="community" element={<BoardList />} />
               <Route path="community/post/:postId" element={<PostDetail />} />
-          </Route>
+          </Route> */}
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminProtectedRoute />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="add-event" element={<AddEvent />} />
-              <Route path="add-nightlife" element={<AddNightlife />} />
-              <Route path="add-spot" element={<AddSpot />} />
-              <Route path="manage-events" element={<ManageEvents />} />
-              <Route path="manage-users" element={<ManageUsers />} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="add-event" element={<AddEvent />} />
+            <Route path="add-nightlife" element={<AddNightlife />} />
+            <Route path="add-spot" element={<AddSpot />} />
+            <Route path="manage-events" element={<ManageEvents />} />
+            <Route path="manage-users" element={<ManageUsers />} />
           </Route>
 
           {/* Other Public Routes */}
-          <Route path="/nightlife" element={<Nightlife />} />
-          <Route path="/nightlife/:id" element={<NightlifeDetail />} />
+          {/* <Route path="/nightlife" element={<Nightlife />} /> */}
+          {/* <Route path="/nightlife/:id" element={<NightlifeDetail />} /> */}
 
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaPlane, FaSun, FaMoon } from 'react-icons/fa';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
-import { useThemeStore } from '../../store/theme.store';
+import useThemeStore from '../../store/theme.store';
 import { useAuthStore } from '../../store/auth.store';
 
 const Header = () => {
@@ -23,19 +23,19 @@ const Header = () => {
 
   const dayMenu = (
     <>
-      <NavLink to="/spots" className={navLinkClass}>Spots</NavLink>
-      <NavLink to="/plan" className={navLinkClass}>Plan</NavLink>
-      <NavLink to="/community" className={navLinkClass}>Community</NavLink>
-      <NavLink to="/events" className={navLinkClass}>Events</NavLink>
+      <NavLink to="/spots" className={navLinkClass}>스팟</NavLink>
+      <NavLink to="/plan" className={navLinkClass}>일정짜기</NavLink>
+      <NavLink to="/community" className={navLinkClass}>커뮤니티</NavLink>
+      <NavLink to="/events" className={navLinkClass}>이벤트</NavLink>
     </>
   );
 
   const nightMenu = (
     <>
-      <NavLink to="/adult/clubs" className={navLinkClass}>Clubs</NavLink>
-      <NavLink to="/adult/bars" className={navLinkClass}>Bars</NavLink>
-      <NavLink to="/adult/karaoke" className={navLinkClass}>Karaoke</NavLink>
-      <NavLink to="/adult/community" className={navLinkClass}>Adult Community</NavLink>
+      <NavLink to="/adult/clubs" className={navLinkClass}>클럽</NavLink>
+      <NavLink to="/adult/bars" className={navLinkClass}>바</NavLink>
+      <NavLink to="/adult/karaoke" className={navLinkClass}>가라오케</NavLink>
+      <NavLink to="/adult/community" className={navLinkClass}>성인 커뮤니티</NavLink>
     </>
   );
 
@@ -46,7 +46,7 @@ const Header = () => {
           <Link to="/" className="flex items-center space-x-2">
             <FaPlane className={`text-2xl ${logoColor}`} />
             <span className={`text-xl font-bold ${isNight ? 'text-white' : 'text-gray-800'}`}>
-              {isNight ? 'Nightlife' : 'Daylife'}
+              베트남 라운지
             </span>
           </Link>
 
@@ -66,14 +66,14 @@ const Header = () => {
             <div className="hidden md:flex items-center ml-3">
               {isLoggedIn ? (
                 <>
-                  <NavLink to="/mypage" className={navLinkClass}>My Page</NavLink>
-                  {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>}
-                  <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle}`}>Logout</button>
+                  <NavLink to="/mypage" className={navLinkClass}>마이페이지</NavLink>
+                  {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>관리자</NavLink>}
+                  <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle}`}>로그아웃</button>
                 </>
               ) : (
                 <>
-                  <NavLink to="/login" className={navLinkClass}>Login</NavLink>
-                  <NavLink to="/register" className={navLinkClass}>Register</NavLink>
+                  <NavLink to="/login" className={navLinkClass}>로그인</NavLink>
+                  <NavLink to="/register" className={navLinkClass}>회원가입</NavLink>
                 </>
               )}
             </div>
@@ -93,16 +93,16 @@ const Header = () => {
             {isNight ? nightMenu : dayMenu}
             <div className="border-t border-gray-700 pt-4 mt-4">
               {isLoggedIn ? (
-                  <>
-                    <NavLink to="/mypage" className={navLinkClass}>My Page</NavLink>
-                    {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>}
-                    <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle} w-full text-left`}>Logout</button>
-                  </>
-                ) : (
-                  <>
-                    <NavLink to="/login" className={navLinkClass}>Login</NavLink>
-                    <NavLink to="/register" className={navLinkClass}>Register</NavLink>
-                  </>
+                <>
+                  <NavLink to="/mypage" className={navLinkClass}>마이페이지</NavLink>
+                  {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>관리자</NavLink>}
+                  <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle} w-full text-left`}>로그아웃</button>
+                </>
+              ) : (
+                <>
+                  <NavLink to="/login" className={navLinkClass}>로그인</NavLink>
+                  <NavLink to="/register" className={navLinkClass}>회원가입</NavLink>
+                </>
               )}
             </div>
           </div>

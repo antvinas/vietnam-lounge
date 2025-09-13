@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <PackageJsonName Condition="$(PackageJsonName) == ''">vietnam-lounge</PackageJsonName>
+    <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
+    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">pnpm --filter web dev</PackageJsonScriptsDev>
+    <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">pnpm --filter web build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsStart Condition="$(PackageJsonScriptsStart) == ''">pnpm --filter web start</PackageJsonScriptsStart>
+    <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">pnpm --filter './apps/**' lint</PackageJsonScriptsLint>
+    <PackageJsonScriptsTest Condition="$(PackageJsonScriptsTest) == ''">pnpm --filter './apps/**' test</PackageJsonScriptsTest>
+    <PackageJsonDevdependenciesTypesNode Condition="$(PackageJsonDevdependenciesTypesNode) == ''">^20.11.24</PackageJsonDevdependenciesTypesNode>
+    <PackageJsonDevdependenciesTypesReact Condition="$(PackageJsonDevdependenciesTypesReact) == ''">^18.2.61</PackageJsonDevdependenciesTypesReact>
+    <PackageJsonDevdependenciesTypesReactDom Condition="$(PackageJsonDevdependenciesTypesReactDom) == ''">^18.2.19</PackageJsonDevdependenciesTypesReactDom>
+    <PackageJsonDevdependenciesEslint Condition="$(PackageJsonDevdependenciesEslint) == ''">^8.57.0</PackageJsonDevdependenciesEslint>
+    <PackageJsonDevdependenciesPrettier Condition="$(PackageJsonDevdependenciesPrettier) == ''">^3.2.5</PackageJsonDevdependenciesPrettier>
+    <PackageJsonDevdependenciesTurbo Condition="$(PackageJsonDevdependenciesTurbo) == ''">^1.12.5</PackageJsonDevdependenciesTurbo>
+    <PackageJsonDevdependenciesTypescript Condition="$(PackageJsonDevdependenciesTypescript) == ''">^5.3.3</PackageJsonDevdependenciesTypescript>
+    <PackageJsonPackagemanager Condition="$(PackageJsonPackagemanager) == ''">pnpm@8.6.0</PackageJsonPackagemanager>
+  </PropertyGroup>
+</Project>

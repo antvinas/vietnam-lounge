@@ -1,8 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://your-production-api.com/api' 
-    : 'http://localhost:8080/api';
+const API_URL = '/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -13,7 +11,7 @@ api.interceptors.request.use(
   (config) => {
     // In a real app, you would get the token from your auth store (e.g., Zustand, Redux)
     // For this example, we'll try to get it from localStorage.
-    const token = localStorage.getItem('auth-token'); 
+    const token = localStorage.getItem('auth-token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
