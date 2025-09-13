@@ -4,24 +4,26 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { getPostById, getCommentsByPostId, createComment, updatePostLike, Post } from '../../api/community.api';
 import { FaHeart, FaRegHeart, FaComment, FaUserCircle, FaPaperPlane } from 'react-icons/fa';
 import { useAuthStore } from '../../store/auth.store';
+import useThemeStore from '../../store/theme.store';
 
 const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const { mode } = useThemeStore();
+  const isAdult = mode === 'night';
+  const segment = isAdult ? 'adult' : 'general';
 
   const [newComment, setNewComment] = useState('');
   const [liked, setLiked] = useState(false);
 
   // Fetch Post Details
   const { data: post, isLoading, isError } = useQuery<Post | null>(
-    ['post', id], 
-    () => id ? getPostById(id) : Promise.resolve(null),
+    ['post', id, segment], 
+    () => id ? getPostById(id, segment) : Promise.resolve(null),
     {
       onSuccess: (data) => {
-        // In a real app, you might check if the current user has liked this post
-        // For now, just initialize based on some logic
         if (data) {
           setLiked(data.likes > 0); // Example logic
         }
@@ -31,18 +33,18 @@ const PostDetail = () => {
 
   // Fetch Comments
   const { data: comments, isLoading: isLoadingComments } = useQuery(
-    ['comments', id], 
-    () => id ? getCommentsByPostId(id) : Promise.resolve([]),
+    ['comments', id, segment], 
+    () => id ? getCommentsByPostId(id, segment) : Promise.resolve([]),
     { enabled: !!id }
   );
 
   // Mutation for adding a comment
   const addCommentMutation = useMutation(
-    ({ postId, content }: { postId: string; content: string }) => createComment(postId, content),
+    ({ postId, content, segment }: { postId: string; content: string; segment: string }) => createComment(postId, content, segment),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['comments', id]);
-        queryClient.invalidateQueries(['post', id]); // To update commentsCount
+        queryClient.invalidateQueries(['comments', id, segment]);
+        queryClient.invalidateQueries(['post', id, segment]); // To update commentsCount
         setNewComment('');
       },
     }
@@ -50,10 +52,10 @@ const PostDetail = () => {
 
   // Mutation for toggling a like
   const toggleLikeMutation = useMutation(
-    (postId: string) => updatePostLike(postId),
+    (postId: string) => updatePostLike(postId, segment),
     {
       onSuccess: (data) => {
-        queryClient.setQueryData(['post', id], (oldData: Post | undefined) => 
+        queryClient.setQueryData(['post', id, segment], (oldData: Post | undefined) => 
           oldData ? { ...oldData, likes: data.likes } : undefined
         );
         setLiked(prev => !prev); // Optimistic update of local state
@@ -64,7 +66,7 @@ const PostDetail = () => {
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() && id) {
-      addCommentMutation.mutate({ postId: id, content: newComment });
+      addCommentMutation.mutate({ postId: id, content: newComment, segment });
     }
   };
 

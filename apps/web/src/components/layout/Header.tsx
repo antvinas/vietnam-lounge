@@ -21,21 +21,20 @@ const Header = () => {
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) => `${linkStyle} ${isActive ? activeLinkStyle : inactiveLinkStyle}`;
 
-  const dayMenu = (
+  const navLinks = (
     <>
-      <NavLink to="/spots" className={navLinkClass}>스팟</NavLink>
-      <NavLink to="/plan" className={navLinkClass}>일정짜기</NavLink>
-      <NavLink to="/community" className={navLinkClass}>커뮤니티</NavLink>
-      <NavLink to="/events" className={navLinkClass}>이벤트</NavLink>
-    </>
-  );
-
-  const nightMenu = (
-    <>
-      <NavLink to="/adult/clubs" className={navLinkClass}>클럽</NavLink>
-      <NavLink to="/adult/bars" className={navLinkClass}>바</NavLink>
-      <NavLink to="/adult/karaoke" className={navLinkClass}>가라오케</NavLink>
-      <NavLink to="/adult/community" className={navLinkClass}>성인 커뮤니티</NavLink>
+      <NavLink to={isNight ? '/adult/spots' : '/spots'} className={navLinkClass}>
+        스팟<span className="text-xs ml-1">{isNight ? '(Spot)' : '(Explore)'}</span>
+      </NavLink>
+      <NavLink to={isNight ? '/adult/plan' : '/plan'} className={navLinkClass}>
+        플랜<span className="text-xs ml-1">{isNight ? '(Plan)' : '(Journey)'}</span>
+      </NavLink>
+      <NavLink to={isNight ? '/adult/community' : '/community'} className={navLinkClass}>
+        커뮤니티<span className="text-xs ml-1">(Lounge)</span>
+      </NavLink>
+      <NavLink to={isNight ? '/adult/events' : '/events'} className={navLinkClass}>
+        이벤트<span className="text-xs ml-1">(Event)</span>
+      </NavLink>
     </>
   );
 
@@ -51,7 +50,7 @@ const Header = () => {
           </Link>
 
           <div className="hidden md:flex items-center space-x-1">
-            {isNight ? nightMenu : dayMenu}
+            {navLinks}
           </div>
 
           <div className="flex items-center">
@@ -90,7 +89,7 @@ const Header = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {isNight ? nightMenu : dayMenu}
+            {navLinks}
             <div className="border-t border-gray-700 pt-4 mt-4">
               {isLoggedIn ? (
                 <>

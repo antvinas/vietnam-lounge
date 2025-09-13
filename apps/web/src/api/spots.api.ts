@@ -38,6 +38,14 @@ export const fetchSpots = async (): Promise<Spot[]> => {
 };
 
 /**
+ * Fetches all adult spots from the backend.
+ */
+export const fetchAdultSpots = async (): Promise<Spot[]> => {
+  const response = await api.get('/adult/spots');
+  return response.data;
+};
+
+/**
  * Fetches a single spot by its ID.
  */
 export const getSpotById = async (id: string): Promise<Spot | null> => {

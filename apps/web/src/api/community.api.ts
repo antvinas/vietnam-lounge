@@ -50,9 +50,9 @@ export const getPosts = async (segment: string): Promise<Post[]> => {
 /**
  * Fetches a single post by its ID.
  */
-export const getPostById = async (id: string): Promise<Post | null> => {
+export const getPostById = async (id: string, segment: string): Promise<Post | null> => {
     try {
-        const response = await api.get(`/community/post/${id}`);
+        const response = await api.get(`/community/post/${segment}/${id}`);
         return response.data;
     } catch (error: unknown) {
         const err = error as { response?: { status?: number } };
@@ -66,8 +66,8 @@ export const getPostById = async (id: string): Promise<Post | null> => {
 /**
  * Fetches all comments for a given post.
  */
-export const getCommentsByPostId = async (postId: string): Promise<Comment[]> => {
-    const response = await api.get(`/community/posts/${postId}/comments`);
+export const getCommentsByPostId = async (postId: string, segment: string): Promise<Comment[]> => {
+    const response = await api.get(`/community/posts/${segment}/${postId}/comments`);
     return response.data;
 };
 
@@ -90,8 +90,8 @@ export const updatePost = async (postId: string, postData: Partial<PostFormData>
 /**
  * Adds a new comment to a post.
  */
-export const createComment = async (postId: string, content: string): Promise<Comment> => {
-    const response = await api.post(`/community/posts/${postId}/comments`, { content });
+export const createComment = async (postId: string, content: string, segment: string): Promise<Comment> => {
+    const response = await api.post(`/community/posts/${segment}/${postId}/comments`, { content });
     return response.data;
 };
 
@@ -106,7 +106,7 @@ export const getCategories = async (segment: string): Promise<Category[]> => {
 /**
  * Toggles the like status for a post.
  */
-export const updatePostLike = async (postId: string): Promise<{ likes: number }> => {
-    const response = await api.post(`/community/posts/${postId}/like`);
+export const updatePostLike = async (postId: string, segment: string): Promise<{ likes: number }> => {
+    const response = await api.post(`/community/posts/${segment}/${postId}/like`);
     return response.data;
 };

@@ -1,7 +1,7 @@
-import useThemeStore from './store/theme.store';
-import { Routes } from './routes';
-import AdultGate from './components/common/AdultGate';
-import Shell from './components/layout/Shell';
+import { Outlet } from 'react-router-dom';
+import useThemeStore from '@/store/theme.store';
+import AdultGate from '@/components/common/AdultGate';
+import Header from '@/components/layout/Header';
 
 function App() {
   const { mode, isGatePassed, passGate } = useThemeStore();
@@ -10,10 +10,16 @@ function App() {
 
   return (
     <div className={`transition-colors duration-300 min-h-screen ${themeClass}`}>
-      {showGate && <AdultGate onEnter={passGate} />}
-      <Shell>
-        <Routes />
-      </Shell>
+      {showGate ? (
+        <AdultGate onEnter={passGate} />
+      ) : (
+        <>
+          <Header />
+          <main className="pt-16">
+            <Outlet />
+          </main>
+        </>
+      )}
     </div>
   );
 }

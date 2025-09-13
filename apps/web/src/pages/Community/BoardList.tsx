@@ -2,12 +2,12 @@ import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { FaPen, FaEye, FaThumbsUp, FaChevronRight } from 'react-icons/fa';
 import { getPosts } from '../../api/community.api';
+import useThemeStore from '../../store/theme.store';
 
-interface BoardListProps {
-  isAdult?: boolean;
-}
+const BoardList: React.FC = () => {
+  const { mode } = useThemeStore();
+  const isAdult = mode === 'night';
 
-const BoardList: React.FC<BoardListProps> = ({ isAdult = false }) => {
   const segment = isAdult ? 'adult' : 'general';
   const { data: posts, isLoading, error } = useQuery([
     'posts', 

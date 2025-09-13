@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { fetchSpots, Spot } from '../../api/spots.api';
+import { fetchSpots, fetchAdultSpots, Spot } from '../../api/spots.api';
+import useThemeStore from '../../store/theme.store';
 import { FaMapMarkerAlt, FaStar, FaBuilding, FaUtensils, FaCoffee, FaTree, FaFilter, FaSortAmountDown } from 'react-icons/fa';
 
 const categoryStyles: { [key: string]: { icon: JSX.Element; color: string } } = {
@@ -14,9 +15,13 @@ const categoryStyles: { [key: string]: { icon: JSX.Element; color: string } } = 
 };
 
 const SpotCard = ({ spot }: { spot: Spot }) => {
+  const { mode } = useThemeStore();
+  const isNight = mode === 'night';
   const style = categoryStyles[spot.category] || categoryStyles.Default;
+  const linkTo = isNight ? `/adult/spots/${spot.id}` : `/spots/${spot.id}`;
+
   return (
-    <Link to={`/spots/${spot.id}`} className="card group">
+    <Link to={linkTo} className="card group">
       <div className="relative">
         <img src={spot.imageUrl} alt={spot.name} className="w-full h-56 object-cover rounded-t-lg" />
         <div className={`absolute top-0 right-0 text-white px-3 py-1 m-2 rounded-full text-sm font-semibold ${style.color}`}>
@@ -42,27 +47,32 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
 };
 
 const SpotCardSkeleton = () => (
-    <div className="card animate-pulse">
-        <div className="h-56 bg-gray-300 dark:bg-gray-700 rounded-t-lg"></div>
-        <div className="p-6">
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 w-1/4 mb-4 rounded"></div>
-            <div className="h-7 bg-gray-300 dark:bg-gray-700 w-3/4 mb-3 rounded"></div>
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 w-full mb-1 rounded"></div>
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 w-5/6 rounded"></div>
-            <div className="flex items-center justify-between mt-4">
-                <div className="h-6 w-12 bg-gray-300 dark:bg-gray-700 rounded"></div>
-                <div className="h-5 w-24 bg-gray-300 dark:bg-gray-700 rounded"></div>
-            </div>
-        </div>
+  <div className="card animate-pulse">
+    <div className="h-56 bg-gray-300 dark:bg-gray-700 rounded-t-lg"></div>
+    <div className="p-6">
+      <div className="h-4 bg-gray-300 dark:bg-gray-700 w-1/4 mb-4 rounded"></div>
+      <div className="h-7 bg-gray-300 dark:bg-gray-700 w-3/4 mb-3 rounded"></div>
+      <div className="h-4 bg-gray-300 dark:bg-gray-700 w-full mb-1 rounded"></div>
+      <div className="h-4 bg-gray-300 dark:bg-gray-700 w-5/6 rounded"></div>
+      <div className="flex items-center justify-between mt-4">
+        <div className="h-6 w-12 bg-gray-300 dark:bg-gray-700 rounded"></div>
+        <div className="h-5 w-24 bg-gray-300 dark:bg-gray-700 rounded"></div>
+      </div>
     </div>
+  </div>
 );
 
 const SpotsHome = () => {
   const [filterRegion, setFilterRegion] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('rating'); // 'rating' or 'name'
+  const { mode } = useThemeStore();
+  const isNight = mode === 'night';
 
-  const { data: spots, isLoading, isError } = useQuery('spots', fetchSpots);
+  const { data: spots, isLoading, isError } = useQuery(
+    ['spots', isNight],
+    isNight ? fetchAdultSpots : fetchSpots
+  );
 
   const filteredAndSortedSpots = useMemo(() => {
     if (!spots) return [];
@@ -90,7 +100,7 @@ const SpotsHome = () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
-          <FaFilter className="text-gray-600 dark:text-gray-300"/>
+          <FaFilter className="text-gray-600 dark:text-gray-300" />
           <select value={filterRegion} onChange={e => setFilterRegion(e.target.value)} className="input-field">
             {regions.map(r => <option key={r} value={r}>{r === 'All' ? 'All Regions' : r}</option>)}
           </select>
@@ -99,7 +109,7 @@ const SpotsHome = () => {
           </select>
         </div>
         <div className="flex items-center gap-4">
-          <FaSortAmountDown className="text-gray-600 dark:text-gray-300"/>
+          <FaSortAmountDown className="text-gray-600 dark:text-gray-300" />
           <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="input-field">
             <option value="rating">Sort by Rating</option>
             <option value="name">Sort by Name</option>

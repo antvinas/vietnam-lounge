@@ -1,4 +1,4 @@
-
+import { api } from '../lib/api';
 import { collection, getDocs, doc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Event } from "../types/event";

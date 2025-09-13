@@ -4,23 +4,22 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { FaPen, FaTag, FaFileAlt } from 'react-icons/fa';
 import { getPostById, updatePost, getCategories, Post, PostFormData } from '../../api/community.api';
 import { useEffect } from 'react';
+import useThemeStore from '../../store/theme.store';
 
-interface EditPostProps {
-  isAdult?: boolean;
-}
-
-const EditPost: React.FC<EditPostProps> = ({ isAdult = false }) => {
+const EditPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { mode } = useThemeStore();
+  const isAdult = mode === 'night';
   const { register, handleSubmit, formState: { errors }, reset } = useForm<Omit<PostFormData, 'segment'>>();
 
   const segment = isAdult ? 'adult' : 'general';
   const redirectPath = isAdult ? `/adult/community/post/${id}` : `/community/post/${id}`;
 
   const { data: post, isLoading: isLoadingPost } = useQuery(
-    ['post', id],
-    () => id ? getPostById(id) : Promise.resolve(null),
+    ['post', id, segment],
+    () => id ? getPostById(id, segment) : Promise.resolve(null),
     { enabled: !!id }
   );
 
@@ -40,7 +39,7 @@ const EditPost: React.FC<EditPostProps> = ({ isAdult = false }) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['posts', segment]);
-        queryClient.invalidateQueries(['post', id]);
+        queryClient.invalidateQueries(['post', id, segment]);
         navigate(redirectPath);
       },
     }

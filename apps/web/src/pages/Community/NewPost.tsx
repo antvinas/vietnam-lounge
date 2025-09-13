@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { FaPen, FaTag, FaFileAlt } from 'react-icons/fa';
 import { createPost, getCategories, PostFormData } from '../../api/community.api';
+import useThemeStore from '../../store/theme.store';
 
-interface NewPostProps {
-  isAdult?: boolean;
-}
-
-const NewPost: React.FC<NewPostProps> = ({ isAdult = false }) => {
+const NewPost: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { mode } = useThemeStore();
+  const isAdult = mode === 'night';
   const { register, handleSubmit, formState: { errors } } = useForm<Omit<PostFormData, 'segment'>>();
 
   const segment = isAdult ? 'adult' : 'general';
