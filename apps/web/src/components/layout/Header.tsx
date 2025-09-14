@@ -10,14 +10,16 @@ import AdultGate from '../common/AdultGate';
 // Component for switching between Explorer and Nightlife modes
 const ContentModeToggle = () => {
   const { contentMode, setContentMode } = useUiStore();
-  const { isAgeVerified, setVerificationStatus } = useAdultStore();
+  // The `setVerificationStatus` function was renamed to `verify` during the refactor.
+  const { isAgeVerified, verify } = useAdultStore();
   const [isAdultGateOpen, setAdultGateOpen] = useState(false);
   const isNightlife = contentMode === 'nightlife';
 
   const handleNightlifeClick = () => {
     const preference = localStorage.getItem('adult_gate_preference');
     if (isAgeVerified || preference === 'hide') {
-      setVerificationStatus(true);
+      // Correctly call the `verify` function from the store.
+      verify();
       setContentMode('nightlife');
     } else {
       setAdultGateOpen(true);
@@ -25,7 +27,8 @@ const ContentModeToggle = () => {
   };
 
   const handleVerificationSuccess = () => {
-    setVerificationStatus(true);
+    // Correctly call the `verify` function after successful age verification.
+    verify();
     setContentMode('nightlife');
     setAdultGateOpen(false);
   };
