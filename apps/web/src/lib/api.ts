@@ -21,17 +21,3 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
-// Optional: Add a response interceptor for global error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle things like 401 Unauthorized errors globally
-    if (error.response?.status === 401) {
-      // For example, redirect to login or refresh the token
-      console.error("Unauthorized! Redirecting to login...");
-      // window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
