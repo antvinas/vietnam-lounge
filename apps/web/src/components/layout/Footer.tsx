@@ -1,55 +1,54 @@
-import { Link } from 'react-router-dom';
-import { FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
-import useThemeStore from '../../store/theme.store';
+import { FaSun, FaMoon, FaInstagram, FaTiktok } from 'react-icons/fa';
+import useUiStore from '@/store/ui.store';
+
+const ThemeToggle = () => {
+  const { themeMode, setThemeMode } = useUiStore();
+  const isDark = themeMode === 'dark';
+
+  // The theme toggle is updated to use the new color system for better consistency.
+  return (
+    <div className="flex items-center p-1 rounded-full bg-surface">
+      <button
+        onClick={() => setThemeMode('light')}
+        className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors flex items-center gap-1.5 ${!isDark ? 'bg-primary/80 text-white shadow-sm' : 'text-text-secondary'}`}
+        aria-pressed={!isDark}
+      >
+        <FaSun/> Light
+      </button>
+      <button
+        onClick={() => setThemeMode('dark')}
+        className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors flex items-center gap-1.5 ${isDark ? 'bg-primary/80 text-white shadow-sm' : 'text-text-secondary'}`}
+        aria-pressed={isDark}
+      >
+        <FaMoon/> Dark
+      </button>
+    </div>
+  );
+};
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  const { mode } = useThemeStore();
-  const isNight = mode === 'night';
-  const linkColor = isNight ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-blue-500';
-
   return (
-    <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
-
-          <div className="md:col-span-1">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">베트남 라운지</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">최고의 베트남을 경험하기 위한 최고의 가이드, 밤낮으로.</p>
+    // The footer now uses semantic colors from our new theme system.
+    <footer className="bg-background border-t border-border mt-auto">
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          
+          <div className="text-center md:text-left">
+            <p className="text-md font-semibold text-text-main">&copy; {new Date().getFullYear()} Vietnam Lounge</p>
+            <p className="text-sm text-text-secondary mt-1">Your ultimate guide to the best of Vietnam, day and night.</p>
+            {/* Trust-building message as requested in the feedback */}
+            <p className="text-xs text-text-secondary/70 mt-3">모든 정보는 현지 기반으로 검증된 콘텐츠입니다.</p>
           </div>
 
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">탐색</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className={linkColor}>홈</Link></li>
-              <li><Link to="/spots" className={linkColor}>스팟</Link></li>
-              <li><Link to="/plan" className={linkColor}>일정짜기</Link></li>
-              <li><Link to="/community" className={linkColor}>커뮤니티</Link></li>
-              <li><Link to="/events" className={linkColor}>이벤트</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">법률</h3>
-            <ul className="space-y-2">
-              <li><Link to="/terms" className={linkColor}>이용약관</Link></li>
-              <li><Link to="/privacy" className={linkColor}>개인정보 처리방침</Link></li>
-              <li><Link to="/contact" className={linkColor}>문의하기</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">팔로우하기</h3>
-            <div className="flex justify-center md:justify-start space-x-4">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"><FaFacebook size={24} /></a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-500 dark:hover:text-pink-400"><FaInstagram size={24} /></a>
-              <a href="#" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-sky-500 dark:hover:text-sky-400"><FaTwitter size={24} /></a>
+          <div className="flex flex-col items-center gap-4">
+            <ThemeToggle />
+            {/* Social media icons for brand enhancement */}
+            <div className="flex items-center space-x-4">
+                <a href="#" className="text-text-secondary hover:text-primary transition-colors text-2xl"><FaInstagram /></a>
+                <a href="#" className="text-text-secondary hover:text-primary transition-colors text-2xl"><FaTiktok /></a>
             </div>
           </div>
-        </div>
 
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 mt-8 pt-6">
-          <p>&copy; {currentYear} 베트남 라운지. 모든 권리 보유.</p>
         </div>
       </div>
     </footer>

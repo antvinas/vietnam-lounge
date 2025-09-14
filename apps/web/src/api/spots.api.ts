@@ -41,7 +41,7 @@ export const fetchSpots = async (): Promise<Spot[]> => {
  * Fetches all adult spots from the backend.
  */
 export const fetchAdultSpots = async (): Promise<Spot[]> => {
-  const response = await api.get('/adult/spots');
+  const response = await api.get('/spots/adult');
   return response.data;
 };
 

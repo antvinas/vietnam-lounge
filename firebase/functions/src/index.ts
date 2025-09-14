@@ -1,5 +1,11 @@
-import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK (MUST BE AT THE TOP)
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+import * as functions from 'firebase-functions/v1';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -12,11 +18,6 @@ import { eventsRouter } from './api/events';
 import { usersRouter } from './api/users';
 import { uploadsRouter } from './api/uploads';
 import { handleCreateUser } from './triggers/auth';
-
-// Initialize Firebase Admin SDK (safely)
-if (admin.apps.length === 0) {
-  admin.initializeApp();
-}
 
 // Initialize Express app
 const app = express();

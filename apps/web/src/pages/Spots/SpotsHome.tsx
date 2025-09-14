@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { fetchSpots, fetchAdultSpots, Spot } from '../../api/spots.api';
-import useThemeStore from '../../store/theme.store';
+import { fetchSpots, fetchAdultSpots, Spot } from '@/api/spots.api'; // Adjusted path
+import useUiStore from '@/store/ui.store'; // Changed from useThemeStore
 import { FaMapMarkerAlt, FaStar, FaBuilding, FaUtensils, FaCoffee, FaTree, FaFilter, FaSortAmountDown } from 'react-icons/fa';
 
 const categoryStyles: { [key: string]: { icon: JSX.Element; color: string } } = {
@@ -11,14 +11,17 @@ const categoryStyles: { [key: string]: { icon: JSX.Element; color: string } } = 
   Restaurant: { icon: <FaUtensils />, color: 'bg-red-500' },
   Cafe: { icon: <FaCoffee />, color: 'bg-yellow-500' },
   Park: { icon: <FaTree />, color: 'bg-green-500' },
+  // Nightlife categories
+  Club: { icon: <FaBuilding />, color: 'bg-purple-500' },
+  Bar: { icon: <FaUtensils />, color: 'bg-pink-500' },
   Default: { icon: <FaMapMarkerAlt />, color: 'bg-gray-500' },
 };
 
 const SpotCard = ({ spot }: { spot: Spot }) => {
-  const { mode } = useThemeStore();
-  const isNight = mode === 'night';
+  const { contentMode } = useUiStore();
   const style = categoryStyles[spot.category] || categoryStyles.Default;
-  const linkTo = isNight ? `/adult/spots/${spot.id}` : `/spots/${spot.id}`;
+  // The link path is now directly determined by the contentMode in the parent component's logic (Header)
+  const linkTo = `/${contentMode}/spots/${spot.id}`;
 
   return (
     <Link to={linkTo} className="card group">
@@ -39,7 +42,7 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
             <FaStar className="text-yellow-400 mr-1" />
             <span className="font-bold text-lg dark:text-white">{spot.rating.toFixed(1)}</span>
           </div>
-          <span className="font-semibold text-primary dark:text-purple-400">View Details</span>
+          <span className="font-semibold text-primary">View Details</span>
         </div>
       </div>
     </Link>
@@ -66,12 +69,12 @@ const SpotsHome = () => {
   const [filterRegion, setFilterRegion] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('rating'); // 'rating' or 'name'
-  const { mode } = useThemeStore();
-  const isNight = mode === 'night';
+  const { contentMode } = useUiStore();
+  const isNightlife = contentMode === 'nightlife';
 
   const { data: spots, isLoading, isError } = useQuery(
-    ['spots', isNight],
-    isNight ? fetchAdultSpots : fetchSpots
+    ['spots', isNightlife], // Query key now depends on the content mode
+    isNightlife ? fetchAdultSpots : fetchSpots
   );
 
   const filteredAndSortedSpots = useMemo(() => {
@@ -88,14 +91,19 @@ const SpotsHome = () => {
 
   const regions = useMemo(() => spots ? ['All', ...new Set(spots.map(s => s.region))] : ['All'], [spots]);
   const categories = useMemo(() => spots ? ['All', ...new Set(spots.map(s => s.category))] : ['All'], [spots]);
+  
+  // BX Copywriting change based on content mode
+  const title = isNightlife ? "Explore the Nightlife" : "Explore Vietnam";
+  const subtitle = isNightlife ? "Experience the vibrant nightlife of Vietnam." : "Discover the most beautiful and exciting destinations.";
+
 
   if (isError) return <div className="text-center py-10 text-red-500">Failed to load spots.</div>;
 
   return (
     <main className="container mx-auto px-4 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white">Explore Vietnam</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 mt-4">Discover the most beautiful and exciting destinations.</p>
+        <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white">{title}</h1>
+        <p className="text-xl text-gray-600 dark:text-gray-400 mt-4">{subtitle}</p>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">

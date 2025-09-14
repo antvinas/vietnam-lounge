@@ -88,8 +88,8 @@ export const Routes = () => {
               </Route>
             </Route>
 
-            {/* Protected Routes for Adult Content */}
-            <Route path="/adult" element={<AgeProtectedRoute />}>
+            {/* Protected Routes for Nightlife Content */}
+            <Route path="/nightlife" element={<AgeProtectedRoute />}>
                 <Route path="" element={<Navigate to="spots" replace />} />
                 <Route path="spots" element={<SpotsHome />} />
                 <Route path="spots/:spotId" element={<SpotDetail />} />

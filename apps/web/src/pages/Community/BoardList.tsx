@@ -1,25 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { FaPen, FaEye, FaThumbsUp, FaChevronRight } from 'react-icons/fa';
-import { getPosts } from '../../api/community.api';
-import useThemeStore from '../../store/theme.store';
+import { getPosts, PostSummary } from '@/api/community.api'; // Adjusted path
+import useUiStore from '@/store/ui.store'; // Changed from useThemeStore
 
 const BoardList: React.FC = () => {
-  const { mode } = useThemeStore();
-  const isAdult = mode === 'night';
+  const { contentMode } = useUiStore(); // Changed from mode
+  const isNightlife = contentMode === 'nightlife';
 
-  const segment = isAdult ? 'adult' : 'general';
-  const { data: posts, isLoading, error } = useQuery([
-    'posts', 
-    segment
-  ], () => getPosts(segment));
+  const segment = isNightlife ? 'adult' : 'general';
+  const { data: posts, isLoading, error } = useQuery<PostSummary[]>( // Use a more specific type
+    ['posts', segment],
+    () => getPosts(segment)
+  );
 
-  const pageTitle = isAdult ? "Adult Community" : "Community";
-  const pageDescription = isAdult
+  // Dynamic page titles and links based on contentMode
+  const pageTitle = isNightlife ? "Nightlife Community" : "Explorer Community";
+  const pageDescription = isNightlife
     ? "Share your nightlife experiences and get tips from others."
     : "Share your travel experiences and get tips from fellow travelers.";
-  const newPostLink = isAdult ? "/adult/community/new" : "/community/new";
-  const postLinkPrefix = isAdult ? "/adult/community/post" : "/community/post";
+  const newPostLink = `/${contentMode}/community/new`;
+  const postLinkPrefix = `/${contentMode}/community/post`;
 
   const SkeletonPost = () => (
     <li className="p-6 animate-pulse">
@@ -38,14 +39,14 @@ const BoardList: React.FC = () => {
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-4xl font-bold">{pageTitle}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{pageTitle}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">{pageDescription}</p>
         </div>
         <Link to={newPostLink}>
-          <button className="btn-primary flex items-center">
+          <button className="btn btn-primary flex items-center">
             <FaPen className="mr-2" /> New Post
           </button>
         </Link>
@@ -54,17 +55,17 @@ const BoardList: React.FC = () => {
       {error && <div className="text-center text-red-500 text-xl p-8">Failed to fetch posts. Please try again later.</div>}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-          <ul>
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => <SkeletonPost key={i} />)
             ) : posts && posts.length > 0 ? (
               posts.map((post) => (
-                <li key={post.id} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                <li key={post.id}>
                   <Link to={`${postLinkPrefix}/${post.id}`} className="block p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <div className="flex justify-between items-center">
                       <div className="flex-grow">
                         <div className="flex items-center mb-2">
-                          {post.category && <span className="badge bg-primary/10 text-primary/80 dark:bg-purple-200 dark:text-purple-800 mr-3">{post.category}</span>}
+                          {post.category && <span className="badge bg-primary/10 text-primary/80 mr-3">{post.category}</span>}
                           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{post.title}</h3>
                         </div>
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mt-3 space-x-4">

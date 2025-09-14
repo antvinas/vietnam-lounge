@@ -36,71 +36,76 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.eventsRouter = void 0;
 const express = __importStar(require("express"));
 const admin = __importStar(require("firebase-admin"));
-const requireAuth_1 = require("../middlewares/requireAuth");
-const requireAdmin_1 = require("../middlewares/requireAdmin");
 const router = express.Router();
 const db = admin.firestore();
-// --- Public Event Endpoints ---
-// GET /events/list (List all upcoming events)
-router.get('/list', async (req, res) => {
+const getCollection = (segment) => {
+    return segment === 'adult' ? db.collection('adult_events') : db.collection('events');
+};
+// GET /events/:segment/upcoming
+router.get('/:segment/upcoming', async (req, res) => {
+    const { segment } = req.params;
     try {
-        const eventsSnapshot = await db.collection('events')
-            .where('date', '>=', new Date().toISOString())
-            .orderBy('date', 'asc')
+        const now = new Date();
+        const eventsSnapshot = await getCollection(segment)
+            .where('endDate', '>=', now)
+            .orderBy('endDate', 'asc')
+            .limit(5)
             .get();
-        const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        res.status(200).send(events);
+        const upcomingEvents = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(upcomingEvents);
     }
     catch (error) {
-        res.status(500).send({ error: 'Failed to fetch events.' });
+        res.status(500).send({ error: `Failed to fetch upcoming ${segment} events.` });
     }
 });
-// GET /events/:id (Get a single event by ID)
-router.get('/:id', async (req, res) => {
-    const { id } = req.params;
+// GET /events/:segment/:id
+router.get('/:segment/:id', async (req, res) => {
+    const { segment, id } = req.params;
     try {
-        const eventDoc = await db.collection('events').doc(id).get();
+        const eventDoc = await getCollection(segment).doc(id).get();
         if (!eventDoc.exists) {
-            return res.status(404).send({ error: 'Event not found.' });
+            return res.status(404).send({ error: 'Event not found' });
         }
         res.status(200).send({ id: eventDoc.id, ...eventDoc.data() });
     }
     catch (error) {
-        res.status(500).send({ error: 'Failed to fetch event.' });
+        res.status(500).send({ error: `Failed to fetch ${segment} event` });
     }
 });
-// POST /events/:id/rsvp (RSVP to an event)
-router.post('/:id/rsvp', requireAuth_1.requireAuth, async (req, res) => {
-    const { id: eventId } = req.params;
-    const { uid } = req.user;
-    const { status } = req.body; // e.g., 'going', 'interested', 'not-going'
-    if (!status) {
-        return res.status(400).send({ error: 'RSVP status is required.' });
-    }
+// GET /events/:segment (e.g., /events/general or /events/adult)
+router.get('/:segment', async (req, res) => {
+    const { segment } = req.params;
     try {
-        const rsvpRef = db.collection('events').doc(eventId).collection('rsvps').doc(uid);
-        await rsvpRef.set({ status: status, date: new Date() });
-        res.status(200).send({ message: 'RSVP successful.' });
+        const eventsSnapshot = await getCollection(segment).get();
+        const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(events);
     }
     catch (error) {
-        res.status(500).send({ error: 'Failed to RSVP to event.' });
+        res.status(500).send({ error: `Failed to fetch ${segment} events.` });
     }
 });
-// --- Admin Event Endpoints ---
-// POST /events/create (Admin only)
-router.post('/create', requireAdmin_1.requireAdmin, async (req, res) => {
-    // Implementation for creating an event (omitted for brevity)
-    res.status(201).send({ message: "Event created (stub)" });
+// POST /events/:segment
+router.post('/:segment', async (req, res) => {
+    const { segment } = req.params;
+    try {
+        const newEvent = req.body;
+        const addedEvent = await getCollection(segment).add(newEvent);
+        res.status(201).send({ id: addedEvent.id, ...newEvent });
+    }
+    catch (error) {
+        res.status(500).send({ error: `Failed to create ${segment} event` });
+    }
 });
-// PUT /events/:id (Admin only)
-router.put('/:id', requireAdmin_1.requireAdmin, async (req, res) => {
-    // Implementation for updating an event (omitted for brevity)
-    res.status(200).send({ message: "Event updated (stub)" });
-});
-// DELETE /events/:id (Admin only)
-router.delete('/:id', requireAdmin_1.requireAdmin, async (req, res) => {
-    // Implementation for deleting an event (omitted for brevity)
-    res.status(200).send({ message: "Event deleted (stub)" });
+// DELETE /events/:segment/:id
+router.delete('/:segment/:id', async (req, res) => {
+    const { segment, id } = req.params;
+    try {
+        await getCollection(segment).doc(id).delete();
+        res.status(204).send();
+    }
+    catch (error) {
+        res.status(500).send({ error: `Failed to delete ${segment} event` });
+    }
 });
 exports.eventsRouter = router;
 //# sourceMappingURL=events.js.map

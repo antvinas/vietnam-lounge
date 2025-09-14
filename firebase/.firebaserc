@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "vietnam-lounge"
-  }
+    "default": "vietnam-lounge-471209"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -43,6 +43,52 @@ const node_cache_1 = __importDefault(require("node-cache"));
 const router = express.Router();
 const db = admin.firestore();
 const recommendationCache = new node_cache_1.default({ stdTTL: 3600 }); // Cache for 1 hour
+// Middleware to check if the user is authenticated and has age verification for adult content
+const requireAuth = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).send('Unauthorized');
+    }
+    next();
+};
+const requireAgeVerification = (req, res, next) => {
+    if (!req.user || !req.user.ageVerified) {
+        return res.status(403).send('Forbidden: Age verification required');
+    }
+    next();
+};
+// GET /spots - Fetches all spots (Day mode)
+router.get('/', requireAuth, async (req, res) => {
+    try {
+        const spotsSnapshot = await db.collection('spots').get();
+        const spots = spotsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(spots);
+    }
+    catch (error) {
+        res.status(500).send({ error: 'Failed to fetch spots.' });
+    }
+});
+// GET /spots/adult - Fetches all adult spots (Night mode)
+router.get('/adult', requireAuth, requireAgeVerification, async (req, res) => {
+    try {
+        const adultSpotsSnapshot = await db.collection('adult_spots').get();
+        const adultSpots = adultSpotsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(adultSpots);
+    }
+    catch (error) {
+        res.status(500).send({ error: 'Failed to fetch adult spots.' });
+    }
+});
+// GET /spots/featured - Fetches featured spots
+router.get('/featured', async (req, res) => {
+    try {
+        const spotsSnapshot = await db.collection('spots').where('featured', '==', true).limit(5).get();
+        const featuredSpots = spotsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(featuredSpots);
+    }
+    catch (error) {
+        res.status(500).send({ error: 'Failed to fetch featured spots.' });
+    }
+});
 // GET /spots/detail?id=...
 router.get('/detail', async (req, res) => {
     const { id } = req.query;
@@ -91,7 +137,7 @@ router.get('/recommendations', async (req, res) => {
             .get();
         const recommendations = recommendationsSnapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(spot => spot.id !== spotId) // Exclude the original spot
+            .filter((spot) => spot.id !== spotId) // Exclude the original spot
             .slice(0, 5); // Ensure we only have 5 recommendations
         recommendationCache.set(cacheKey, recommendations);
         res.status(200).send(recommendations);

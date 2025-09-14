@@ -1,108 +1,159 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaPlane, FaSun, FaMoon } from 'react-icons/fa';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
-import useThemeStore from '../../store/theme.store';
-import { useAuthStore } from '../../store/auth.store';
+import useUiStore from '@/store/ui.store';
+import { useAuthStore } from '@/store/auth.store';
+import { useStore as useAdultStore } from '@/store/adult.store';
+import AdultGate from '../common/AdultGate';
+
+// Component for switching between Explorer and Nightlife modes
+const ContentModeToggle = () => {
+  const { contentMode, setContentMode } = useUiStore();
+  const { isAgeVerified, setVerificationStatus } = useAdultStore();
+  const [isAdultGateOpen, setAdultGateOpen] = useState(false);
+  const isNightlife = contentMode === 'nightlife';
+
+  const handleNightlifeClick = () => {
+    const preference = localStorage.getItem('adult_gate_preference');
+    if (isAgeVerified || preference === 'hide') {
+      setVerificationStatus(true);
+      setContentMode('nightlife');
+    } else {
+      setAdultGateOpen(true);
+    }
+  };
+
+  const handleVerificationSuccess = () => {
+    setVerificationStatus(true);
+    setContentMode('nightlife');
+    setAdultGateOpen(false);
+  };
+
+  const activeClass = "bg-surface text-text-main shadow-subtle";
+  const inactiveClass = "text-text-secondary";
+
+  return (
+    <>
+      <div className="flex items-center p-1 rounded-full bg-background">
+        <button
+          onClick={() => setContentMode('explorer')}
+          className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors flex items-center gap-1.5 ${!isNightlife ? activeClass : inactiveClass}`}
+          aria-pressed={!isNightlife}
+        >
+          Explorer 🌍
+        </button>
+        <button
+          onClick={handleNightlifeClick}
+          className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors flex items-center gap-1.5 ${isNightlife ? activeClass : inactiveClass}`}
+          aria-pressed={isNightlife}
+        >
+          Nightlife 🌙
+        </button>
+      </div>
+      {isAdultGateOpen && (
+        <AdultGate
+          onSuccess={handleVerificationSuccess}
+          onCancel={() => setAdultGateOpen(false)}
+        />
+      )}
+    </>
+  );
+};
+
+// New Component for switching between Light and Dark themes
+const ThemeModeToggle = () => {
+  const { themeMode, setThemeMode } = useUiStore();
+
+  const toggleTheme = () => {
+    setThemeMode(themeMode === 'light' ? 'dark' : 'light');
+  };
+
+  return (
+    <button
+      onClick={toggleTheme}
+      className="p-2 rounded-full text-text-secondary hover:bg-surface hover:shadow-subtle transition-all"
+      aria-label="Toggle theme"
+    >
+      {themeMode === 'light' ? <FaMoon size={18} /> : <FaSun size={18} className="text-yellow-400" />}
+    </button>
+  );
+};
 
 const Header = () => {
-  const { mode, toggleMode } = useThemeStore();
-  const { isLoggedIn, user, logout } = useAuthStore();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isLoggedIn, user, logout } = useAuthStore();
 
-  const isNight = mode === 'night';
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+      isActive
+        ? 'bg-primary text-white' // This will now use the correct primary color for each mode
+        : 'text-text-secondary hover:bg-surface hover:text-text-main'
+    }`;
 
-  const linkStyle = "block px-3 py-2 rounded-md text-base font-medium transition-colors";
-  const activeLinkStyle = isNight ? "bg-purple-600 text-white" : "bg-blue-600 text-white";
-  const inactiveLinkStyle = isNight ? "text-gray-300 hover:bg-gray-700 hover:text-white" : "text-gray-700 hover:bg-gray-200 hover:text-gray-900";
-  const headerBg = isNight ? "bg-gray-800 shadow-lg" : "bg-white shadow-md";
-  const logoColor = isNight ? "text-purple-400" : "text-blue-600";
-  const toggleButtonColor = isNight ? "text-yellow-400" : "text-gray-600";
+  const authLinkClass = "px-3 py-2 rounded-md text-sm font-medium transition-colors text-text-secondary hover:bg-surface hover:text-text-main";
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) => `${linkStyle} ${isActive ? activeLinkStyle : inactiveLinkStyle}`;
-
-  const navLinks = (
+  const mainNavLinks = (
     <>
-      <NavLink to={isNight ? '/adult/spots' : '/spots'} className={navLinkClass}>
-        스팟<span className="text-xs ml-1">{isNight ? '(Spot)' : '(Explore)'}</span>
-      </NavLink>
-      <NavLink to={isNight ? '/adult/plan' : '/plan'} className={navLinkClass}>
-        플랜<span className="text-xs ml-1">{isNight ? '(Plan)' : '(Journey)'}</span>
-      </NavLink>
-      <NavLink to={isNight ? '/adult/community' : '/community'} className={navLinkClass}>
-        커뮤니티<span className="text-xs ml-1">(Lounge)</span>
-      </NavLink>
-      <NavLink to={isNight ? '/adult/events' : '/events'} className={navLinkClass}>
-        이벤트<span className="text-xs ml-1">(Event)</span>
-      </NavLink>
+      <NavLink to={"/spots"} className={navLinkClass}>스팟</NavLink>
+      <NavLink to={"/plan"} className={navLinkClass}>플랜</NavLink>
+      <NavLink to={"/community"} className={navLinkClass}>라운지</NavLink>
+      <NavLink to={"/events"} className={navLinkClass}>이벤트</NavLink>
+    </>
+  );
+
+  const authNavLinks = isLoggedIn ? (
+    <>
+      <NavLink to="/mypage" className={authLinkClass}>마이페이지</NavLink>
+      {user?.role === 'admin' && <NavLink to="/admin" className={authLinkClass}>관리자</NavLink>}
+      <button onClick={logout} className={`${authLinkClass} text-left w-full`}>로그아웃</button>
+    </>
+  ) : (
+    <>
+      <NavLink to="/login" className={authLinkClass}>로그인</NavLink>
+      <NavLink to="/register" className={authLinkClass}>회원가입</NavLink>
     </>
   );
 
   return (
-    <header className={`sticky top-0 z-50 transition-colors duration-300 ${headerBg}`}>
+    <header className="sticky top-0 z-50 bg-surface shadow-subtle transition-colors duration-320">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <FaPlane className={`text-2xl ${logoColor}`} />
-            <span className={`text-xl font-bold ${isNight ? 'text-white' : 'text-gray-800'}`}>
-              베트남 라운지
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center space-x-1">
-            {navLinks}
-          </div>
-
           <div className="flex items-center">
-            <button
-              onClick={toggleMode}
-              className={`p-2 rounded-full focus:outline-none focus:ring-2 ${toggleButtonColor}`}
-              aria-label="Toggle theme"
-            >
-              {isNight ? <FaSun /> : <FaMoon />}
-            </button>
-
-            <div className="hidden md:flex items-center ml-3">
-              {isLoggedIn ? (
-                <>
-                  <NavLink to="/mypage" className={navLinkClass}>마이페이지</NavLink>
-                  {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>관리자</NavLink>}
-                  <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle}`}>로그아웃</button>
-                </>
-              ) : (
-                <>
-                  <NavLink to="/login" className={navLinkClass}>로그인</NavLink>
-                  <NavLink to="/register" className={navLinkClass}>회원가입</NavLink>
-                </>
-              )}
+            <Link to="/" className="flex items-center space-x-2">
+              <FaPlane className="text-2xl text-primary" />
+              <span className="text-xl font-bold text-text-main">베트남 라운지</span>
+            </Link>
+            <nav className="hidden md:flex items-center space-x-1 ml-6">
+              {mainNavLinks}
+            </nav>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="hidden md:flex items-center space-x-2 bg-background p-1 rounded-full">
+              <ContentModeToggle />
+              <ThemeModeToggle />
             </div>
-
+            <div className="hidden md:flex items-center ml-2">{authNavLinks}</div>
             <div className="md:hidden flex items-center">
-              <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700">
+               <ThemeModeToggle />
+              <button onClick={() => setMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-md text-text-secondary">
                 {isMobileMenuOpen ? <HiOutlineX size={24} /> : <HiOutlineMenu size={24} />}
               </button>
             </div>
           </div>
         </div>
       </div>
-
       {isMobileMenuOpen && (
-        <div className="md:hidden">
+        <div className="md:hidden bg-surface">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks}
-            <div className="border-t border-gray-700 pt-4 mt-4">
-              {isLoggedIn ? (
-                <>
-                  <NavLink to="/mypage" className={navLinkClass}>마이페이지</NavLink>
-                  {user?.role === 'admin' && <NavLink to="/admin" className={navLinkClass}>관리자</NavLink>}
-                  <button onClick={logout} className={`${linkStyle} ${inactiveLinkStyle} w-full text-left`}>로그아웃</button>
-                </>
-              ) : (
-                <>
-                  <NavLink to="/login" className={navLinkClass}>로그인</NavLink>
-                  <NavLink to="/register" className={navLinkClass}>회원가입</NavLink>
-                </>
-              )}
+             <div className="p-2 flex justify-center">
+                <div className="bg-background p-1 rounded-full">
+                    <ContentModeToggle />
+                </div>
+            </div>
+            <nav className="flex flex-col space-y-1">{mainNavLinks}</nav>
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="flex flex-col space-y-1">{authNavLinks}</div>
             </div>
           </div>
         </div>

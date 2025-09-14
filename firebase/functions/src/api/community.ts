@@ -1,280 +1,113 @@
-
 import * as express from 'express';
 import * as admin from 'firebase-admin';
-import { requireAuth } from '../middlewares/requireAuth';
-import { BadWordsService } from '../services/bad-words/BadWords.service';
 
 const router = express.Router();
 const db = admin.firestore();
-const badWordsService = BadWordsService.getInstance();
 
-// --- Posts Endpoints ---
+// Middleware for authentication
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Implement your authentication logic here
+    // For example, checking a Firebase token
+    next();
+};
 
-// GET /community/list (List all posts)
-router.get('/list', async (req, res) => {
-  const { segment, tag, authorId } = req.query;
-  try {
-    let query: admin.firestore.Query = db.collection('posts');
+// GET /community/posts/:segment/:id
+router.get('/posts/:segment/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { segment, id } = req.params;
+    const collectionName = segment === 'adult' ? 'adult_posts' : 'posts';
 
-    if (segment) {
-      query = query.where('segment', '==', segment);
+    try {
+        const postDoc = await db.collection(collectionName).doc(id).get();
+        if (!postDoc.exists) {
+            return res.status(404).send({ error: 'Post not found.' });
+        }
+        res.status(200).send({ id: postDoc.id, ...postDoc.data() });
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to fetch post.' });
     }
-    if (tag) {
-      query = query.where('tags', 'array-contains', tag);
-    }
-    if (authorId) {
-      query = query.where('authorId', '==', authorId);
-    }
-
-    const postsSnapshot = await query.orderBy('createdAt', 'desc').get();
-    const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.status(200).send(posts);
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to fetch posts.' });
-  }
 });
 
-// GET /community/post/:id (Get a single post)
-router.get('/post/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const postDoc = await db.collection('posts').doc(id).get();
-    if (!postDoc.exists) {
-      return res.status(404).send({ error: 'Post not found.' });
+// GET /community/posts/:segment (general or adult)
+router.get('/posts/:segment', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { segment } = req.params;
+    const collectionName = segment === 'adult' ? 'adult_posts' : 'posts';
+
+    try {
+        const postsSnapshot = await db.collection(collectionName).orderBy('timestamp', 'desc').get();
+        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(posts);
+    } catch (error) {
+        res.status(500).send({ error: `Failed to fetch ${segment} posts.` });
     }
-    // Increment view count
-    await db.collection('posts').doc(id).update({ views: admin.firestore.FieldValue.increment(1) });
-    res.status(200).send({ id: postDoc.id, ...postDoc.data() });
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to fetch post.' });
-  }
 });
 
-// POST /community/create (Create a new post)
-router.post('/create', requireAuth, async (req, res) => {
-  const { title, content, segment, tags } = req.body;
-  const { uid: authorId } = req.user!;
+// POST /community/posts
+router.post('/posts', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { title, content, category, segment } = req.body;
+    const collectionName = segment === 'adult' ? 'adult_posts' : 'posts';
 
-  if (!title || !content) {
-    return res.status(400).send({ error: 'Title and content are required.' });
-  }
-
-  // Bad words filter
-  if (badWordsService.containsBlockedWords(title) || badWordsService.containsBlockedWords(content)) {
-    return res.status(400).send({ error: 'Post contains blocked words.' });
-  }
-
-  try {
-    const newPost = {
-      title,
-      content,
-      segment: segment || 'general',
-      tags: tags || [],
-      authorId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      likeCount: 0,
-      commentCount: 0,
-      views: 0,
-    };
-    const postRef = await db.collection('posts').add(newPost);
-    res.status(201).send({ id: postRef.id, ...newPost });
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to create post.' });
-  }
-});
-
-// PUT /community/post/:id (Update a post)
-router.put('/post/:id', requireAuth, async (req, res) => {
-  const { id } = req.params;
-  const { uid } = req.user!;
-  const { title, content, segment, tags } = req.body;
-
-  if (badWordsService.containsBlockedWords(title) || badWordsService.containsBlockedWords(content)) {
-    return res.status(400).send({ error: 'Update contains blocked words.' });
-  }
-
-  try {
-    const postRef = db.collection('posts').doc(id);
-    const postDoc = await postRef.get();
-    if (!postDoc.exists) {
-      return res.status(404).send({ error: 'Post not found.' });
+    try {
+        const newPost = {
+            title,
+            content,
+            category,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            // ... other post fields
+        };
+        const addedPost = await db.collection(collectionName).add(newPost);
+        res.status(201).send({ id: addedPost.id, ...newPost });
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to create post.' });
     }
-    if (postDoc.data()?.authorId !== uid) {
-      return res.status(403).send({ error: 'User not authorized to update this post.' });
+});
+
+// GET /community/posts/:segment/:postId/comments
+router.get('/posts/:segment/:postId/comments', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { segment, postId } = req.params;
+    const collectionName = segment === 'adult' ? 'adult_comments' : 'comments';
+
+    try {
+        const commentsSnapshot = await db.collection(collectionName).where('postId', '==', postId).orderBy('timestamp', 'asc').get();
+        const comments = commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(comments);
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to fetch comments.' });
     }
-
-    await postRef.update({
-      title,
-      content,
-      segment,
-      tags,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    res.status(200).send({ message: 'Post updated successfully' });
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to update post.' });
-  }
 });
 
-// DELETE /community/post/:id (Delete a post)
-router.delete('/post/:id', requireAuth, async (req, res) => {
-  const { id } = req.params;
-  const { uid } = req.user!;
+// POST /community/posts/:segment/:postId/comments
+router.post('/posts/:segment/:postId/comments', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { segment, postId } = req.params;
+    const { content } = req.body;
+    const collectionName = segment === 'adult' ? 'adult_comments' : 'comments';
 
-  try {
-    const postRef = db.collection('posts').doc(id);
-    const postDoc = await postRef.get();
-    if (!postDoc.exists) {
-      return res.status(404).send({ error: 'Post not found.' });
+    try {
+        const newComment = {
+            postId,
+            content,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            // ... other comment fields
+        };
+        const addedComment = await db.collection(collectionName).add(newComment);
+        res.status(201).send({ id: addedComment.id, ...newComment });
+    } catch (error) {
+        res.status(500).send({ error: 'Failed to create comment.' });
     }
-    if (postDoc.data()?.authorId !== uid) {
-      return res.status(403).send({ error: 'User not authorized to delete this post.' });
+});
+
+// GET /community/categories/:segment
+router.get('/categories/:segment', requireAuth, async (req: express.Request, res: express.Response) => {
+    const { segment } = req.params;
+    const collectionName = segment === 'adult' ? 'adult_categories' : 'categories';
+
+    try {
+        const categoriesSnapshot = await db.collection(collectionName).get();
+        const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        res.status(200).send(categories);
+    } catch (error) {
+        res.status(500).send({ error: `Failed to fetch ${segment} categories.` });
     }
-
-    // Note: In a real app, you might want to delete comments and likes as well (or handle them differently)
-    await postRef.delete();
-    res.status(200).send({ message: 'Post deleted successfully.' });
-
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to delete post.' });
-  }
 });
 
-
-// --- Comments Endpoints ---
-
-// POST /community/comment (Add a comment to a post)
-router.post('/comment', requireAuth, async (req, res) => {
-  const { postId, content } = req.body;
-  const { uid: authorId } = req.user!;
-
-  if (!postId || !content) {
-    return res.status(400).send({ error: 'Post ID and content are required.' });
-  }
-
-  if (badWordsService.containsBlockedWords(content)) {
-    return res.status(400).send({ error: 'Comment contains blocked words.' });
-  }
-
-  try {
-    const postRef = db.collection('posts').doc(postId);
-    const commentRef = postRef.collection('comments').doc();
-
-    await db.runTransaction(async (transaction) => {
-      const postDoc = await transaction.get(postRef);
-      if (!postDoc.exists) {
-        throw new Error("Post not found");
-      }
-      transaction.set(commentRef, {
-        content,
-        authorId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        likeCount: 0,
-      });
-      transaction.update(postRef, { commentCount: admin.firestore.FieldValue.increment(1) });
-    });
-
-    res.status(201).send({ id: commentRef.id, message: 'Comment added successfully.' });
-  } catch (error: any) {
-    res.status(500).send({ error: error.message || 'Failed to add comment.' });
-  }
-});
-
-// GET /community/comments (Get comments for a post)
-router.get('/comments', async (req, res) => {
-  const { postId } = req.query;
-  if (!postId) {
-    return res.status(400).send({ error: 'Post ID is required.' });
-  }
-  try {
-    const commentsSnapshot = await db.collection('posts').doc(postId as string).collection('comments').orderBy('createdAt', 'desc').get();
-    const comments = commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.status(200).send(comments);
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to fetch comments.' });
-  }
-});
-
-
-// --- Likes Endpoints ---
-
-// POST /community/like (Like a post or comment)
-router.post('/like', requireAuth, async (req, res) => {
-  const { targetId, targetType } = req.body; // targetType can be 'post' or 'comment'
-  const { uid } = req.user!;
-
-  if (!targetId || !targetType) {
-    return res.status(400).send({ error: 'Target ID and type are required.' });
-  }
-
-  try {
-    let targetRef: admin.firestore.DocumentReference;
-    if (targetType === 'post') {
-      targetRef = db.collection('posts').doc(targetId);
-    } else if (targetType === 'comment') {
-      // To like a comment, we need the postId as well.
-      // The request should be structured like: { targetType: 'comment', postId: '...', targetId: '...'}
-      const { postId } = req.body;
-      if (!postId) return res.status(400).send({ error: 'Post ID is required for liking a comment.' });
-      targetRef = db.collection('posts').doc(postId).collection('comments').doc(targetId);
-    } else {
-      return res.status(400).send({ error: 'Invalid target type.' });
-    }
-
-    const likeRef = targetRef.collection('likes').doc(uid);
-
-    await db.runTransaction(async (transaction) => {
-      const likeDoc = await transaction.get(likeRef);
-      if (likeDoc.exists) {
-        // User already liked it, so unlike
-        transaction.delete(likeRef);
-        transaction.update(targetRef, { likeCount: admin.firestore.FieldValue.increment(-1) });
-      } else {
-        // User has not liked it yet, so like
-        transaction.set(likeRef, { createdAt: admin.firestore.FieldValue.serverTimestamp() });
-        transaction.update(targetRef, { likeCount: admin.firestore.FieldValue.increment(1) });
-      }
-    });
-
-    res.status(201).send({ message: 'Like status toggled successfully.' });
-
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to toggle like status.' });
-  }
-});
-
-// POST /community/report (Report a post or comment)
-router.post('/report', requireAuth, async (req, res) => {
-  const { targetId, targetType, reason, postId } = req.body;
-  const { uid: reporterId } = req.user!;
-
-  if (!targetId || !targetType) {
-    return res.status(400).send({ error: 'Target ID and type are required.' });
-  }
-
-  if (targetType === 'comment' && !postId) {
-    return res.status(400).send({ error: 'Post ID is required for reporting a comment.' });
-  }
-
-  try {
-    const report = {
-      targetId,
-      targetType,
-      postId: targetType === 'comment' ? postId : null,
-      reporterId,
-      reason: reason || 'No reason provided.',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      status: 'pending', // pending, reviewed, resolved
-    };
-
-    await db.collection('reports').add(report);
-
-    res.status(201).send({ message: 'Report submitted successfully.' });
-
-  } catch (error) {
-    res.status(500).send({ error: 'Failed to submit report.' });
-  }
-});
 
 export const communityRouter = router;

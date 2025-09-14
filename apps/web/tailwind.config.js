@@ -1,77 +1,72 @@
-
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-  darkMode: ['class'],
+export default {
+  darkMode: 'class',
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: '2rem',
-      screens: {
-        '2xl': '1400px',
-      },
-    },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
-        },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
-        },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
+        // === Raw Color Tokens ===
+        'explorer-primary': '#2BB6C5',
+        'explorer-secondary': '#2F80ED',
+        'explorer-accent': '#00C2A8',
+        'explorer-bg': '#F7FBFF',
+        'explorer-surface': '#FFFFFF',
+        'explorer-text': '#0B1726',
+
+        'nightlife-primary': '#8B5CF6',
+        'nightlife-accent': '#FF61D8',
+        'nightlife-bg': '#0E1526',
+        'nightlife-surface': '#121826',
+        'nightlife-elevated': '#1B2337',
+        'nightlife-text': '#E6E9F2',
+        'nightlife-text-secondary': '#A9B4C7',
+
+        // === Semantic Color Variables ===
+        primary: 'var(--color-primary)',
+        secondary: 'var(--color-secondary)',
+        accent: 'var(--color-accent)',
+        background: 'var(--color-background)',
+        surface: 'var(--color-surface)',
+        elevated: 'var(--color-elevated)',
+        'text-main': 'var(--color-text-main)',
+        'text-secondary': 'var(--color-text-secondary)',
+
+        // ShadCN/UI compatibility layer
+        border: 'var(--color-border)',
+        input: 'var(--color-border)',
+        ring: 'var(--color-primary)',
+        foreground: 'var(--color-text-main)',
       },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+      scale: {
+        '102': '1.02',
       },
-      keyframes: {
-        'accordion-down': {
-          from: { height: 0 },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: 0 },
-        },
+      fontSize: {
+        'h1': ['clamp(2.5rem, 5vw, 3.75rem)', { lineHeight: '1.1', fontWeight: '800' }],
+        'h2': ['clamp(1.75rem, 4vw, 2.5rem)', { lineHeight: '1.2', fontWeight: '700' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'caption': ['0.875rem', { lineHeight: '1.4' }],
       },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
+      transitionDuration: {
+        '150': '150ms',
+        '200': '200ms',
+        '240': '240ms',
+        '320': '320ms',
       },
+      transitionTimingFunction: {
+        'material-decel': 'cubic-bezier(0.0, 0.0, 0.2, 1)',
+        'material-accel': 'cubic-bezier(0.4, 0.0, 1, 1)',
+      },
+      transitionProperty: {
+        'transform-shadow': 'transform, box-shadow',
+      },
+      boxShadow: {
+        'lifted': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+        'subtle': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+      }
     },
   },
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography'), require('@tailwindcss/forms')],
+  plugins: [],
 }

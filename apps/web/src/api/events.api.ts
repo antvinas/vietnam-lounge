@@ -1,43 +1,28 @@
 import { api } from '../lib/api';
-import { collection, getDocs, doc, getDoc, addDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 import { Event } from "../types/event";
 
-const eventsCollection = collection(db, "events");
-
 /**
- * Fetches all events from the Firestore 'events' collection.
+ * Fetches all events, for Day or Night mode.
  */
-export const getEvents = async (): Promise<Event[]> => {
-
+export const getEvents = async (isNight: boolean): Promise<Event[]> => {
+  const segment = isNight ? 'adult' : 'general';
   try {
-    const eventSnapshot = await getDocs(eventsCollection);
-    const eventList = eventSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as Omit<Event, 'id'>),
-    }));
-    return eventList;
+    const response = await api.get(`/events/${segment}`);
+    return response.data;
   } catch (error) {
-    console.error("Error fetching events from Firestore:", error);
+    console.error(`Error fetching ${segment} events:`, error);
     return [];
   }
 };
 
 /**
- * Fetches a single event by its ID from Firestore.
+ * Fetches a single event by its ID, for Day or Night mode.
  */
-export const getEventById = async (id: string): Promise<Event | null> => {
-
+export const getEventById = async (id: string, isNight: boolean): Promise<Event | null> => {
+  const segment = isNight ? 'adult' : 'general';
   try {
-    const eventDoc = doc(db, "events", id);
-    const eventSnapshot = await getDoc(eventDoc);
-
-    if (eventSnapshot.exists()) {
-      return { id: eventSnapshot.id, ...eventSnapshot.data() } as Event;
-    } else {
-      console.warn(`Event with id ${id} not found.`);
-      return null;
-    }
+    const response = await api.get(`/events/${segment}/${id}`);
+    return response.data;
   } catch (error) {
     console.error(`Error fetching event ${id}:`, error);
     return null;
@@ -45,23 +30,26 @@ export const getEventById = async (id: string): Promise<Event | null> => {
 };
 
 /**
- * Adds a new event to the Firestore 'events' collection.
+ * Adds a new event.
  */
-export const addEvent = async (event: Omit<Event, 'id'>): Promise<string> => {
-
+export const addEvent = async (event: Omit<Event, 'id'>, isNight: boolean): Promise<string> => {
+  const segment = isNight ? 'adult' : 'general';
   try {
-    const docRef = await addDoc(eventsCollection, event);
-    return docRef.id;
+    const response = await api.post(`/events/${segment}`, event);
+    return response.data.id;
   } catch (error) {
-    console.error("Error adding event to Firestore:", error);
+    console.error("Error adding event:", error);
     throw new Error('Failed to add event');
   }
 };
 
-export const deleteEvent = async (id: string): Promise<void> => {
+/**
+ * Deletes an event by its ID.
+ */
+export const deleteEvent = async (id: string, isNight: boolean): Promise<void> => {
+  const segment = isNight ? 'adult' : 'general';
   try {
-    const eventDoc = doc(db, "events", id);
-    await deleteDoc(eventDoc);
+    await api.delete(`/events/${segment}/${id}`);
   } catch (error) {
     console.error(`Error deleting event ${id}:`, error);
     throw new Error('Failed to delete event');
@@ -71,7 +59,8 @@ export const deleteEvent = async (id: string): Promise<void> => {
 /**
  * Fetches upcoming events.
  */
-export const fetchUpcomingEvents = async (): Promise<Event[]> => {
-  const response = await api.get('/events/upcoming');
-  return response.data;
+export const fetchUpcomingEvents = async (isNight: boolean): Promise<Event[]> => {
+    const segment = isNight ? 'adult' : 'general';
+    const response = await api.get(`/events/${segment}/upcoming`);
+    return response.data;
 };

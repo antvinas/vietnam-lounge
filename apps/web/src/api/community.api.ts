@@ -52,7 +52,7 @@ export const getPosts = async (segment: string): Promise<Post[]> => {
  */
 export const getPostById = async (id: string, segment: string): Promise<Post | null> => {
     try {
-        const response = await api.get(`/community/post/${segment}/${id}`);
+        const response = await api.get(`/community/posts/${segment}/${id}`);
         return response.data;
     } catch (error: unknown) {
         const err = error as { response?: { status?: number } };

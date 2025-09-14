@@ -1,74 +1,53 @@
+import React, { useState } from 'react';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useThemeStore from '../../store/theme.store';
+interface AdultGateProps {
+  onSuccess: () => void;
+  onCancel: () => void;
+}
 
-const ADULT_GATE_VERIFIED_KEY = 'adult_gate_verified';
-
-const AdultGate = ({ onEnter }: { onEnter: () => void }) => {
-  const [isVerified, setVerified] = useState(false);
-  const navigate = useNavigate();
-
-  const { mode } = useThemeStore();
-  const isNight = mode === 'night';
-
-  useEffect(() => {
-    const isAlreadyVerified = localStorage.getItem(ADULT_GATE_VERIFIED_KEY) === 'true';
-    if (isAlreadyVerified) {
-      setVerified(true);
-      onEnter();
-    }
-  }, [onEnter]);
+const AdultGate: React.FC<AdultGateProps> = ({ onSuccess, onCancel }) => {
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const handleEnter = () => {
-    localStorage.setItem(ADULT_GATE_VERIFIED_KEY, 'true');
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 30);
-    localStorage.setItem('adult_gate_expiry', expiryDate.toISOString());
-
-    setVerified(true);
-    onEnter();
+    if (dontShowAgain) {
+      localStorage.setItem('adult_gate_preference', 'hide');
+    }
+    onSuccess();
   };
 
-  const handleLeave = useCallback(() => {
-    navigate(-1);
-  }, [navigate]);
-
-  useEffect(() => {
-    if (isVerified) return;
-
-    const timer = setTimeout(() => {
-      if (!isVerified) {
-        handleLeave();
-      }
-    }, 10000); // Auto-redirect after 10 seconds
-
-    return () => clearTimeout(timer);
-  }, [isVerified, handleLeave]);
-
-  if (isVerified) return null;
-
-  const bgColor = isNight ? 'bg-gray-900' : 'bg-gray-100';
-  const textColor = isNight ? 'text-white' : 'text-gray-800';
-  const buttonStyles = `px-8 py-3 text-lg font-bold rounded-lg transition-transform transform hover:scale-105`;
-
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${bgColor} ${textColor}`}>
-      <div className="text-center p-8 max-w-lg">
-        <h1 className="text-4xl font-extrabold mb-4">성인 인증</h1>
-        <p className="text-lg mb-8">이 구역에는 성인용 콘텐츠가 포함될 수 있습니다. 해당 지역의 법적 연령인지 확인해주세요.</p>
-        <div className="flex justify-center gap-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="text-center p-8 max-w-md w-full rounded-2xl shadow-lifted bg-surface border border-border">
+        <h1 className="text-h2 text-text-main mb-4">🌙 Nightlife Zone 안내</h1>
+        <div className="text-body text-text-secondary mb-8 space-y-2">
+          <p>이곳은 베트남의 밤문화를 소개하는 전용 공간입니다.</p>
+          <p>다소 성인 친화적 콘텐츠가 포함될 수 있어요. 편안하지 않다면 메인으로 돌아가 주세요.</p>
+        </div>
+
+        <div className="mb-6">
+            <label className="flex items-center justify-center gap-2 text-sm text-text-secondary cursor-pointer">
+                <input 
+                    type="checkbox" 
+                    checked={dontShowAgain}
+                    onChange={(e) => setDontShowAgain(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                다음부터 이 안내 보지 않기
+            </label>
+        </div>
+
+        <div className="flex justify-center gap-4">
           <button
             onClick={handleEnter}
-            className={`${buttonStyles} bg-green-600 hover:bg-green-700 text-white`}
+            className="bg-primary hover:opacity-90 text-white font-bold py-3 px-8 rounded-full transition-all duration-240 transform hover:scale-105 shadow-subtle"
           >
-            입장
+            입장하기
           </button>
           <button
-            onClick={handleLeave}
-            className={`${buttonStyles} bg-red-600 hover:bg-red-700 text-white`}
+            onClick={onCancel}
+            className="bg-transparent hover:bg-surface text-text-secondary font-bold py-3 px-8 rounded-full transition-colors duration-240"
           >
-            나가기
+            돌아가기
           </button>
         </div>
       </div>

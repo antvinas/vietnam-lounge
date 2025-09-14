@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { getPostById, getCommentsByPostId, createComment, updatePostLike, Post } from '../../api/community.api';
+import { getPostById, getCommentsByPostId, createComment, updatePostLike, Post } from '@/api/community.api'; // Adjusted path
 import { FaHeart, FaRegHeart, FaComment, FaUserCircle, FaPaperPlane } from 'react-icons/fa';
-import { useAuthStore } from '../../store/auth.store';
-import useThemeStore from '../../store/theme.store';
+import { useAuthStore } from '@/store/auth.store'; // Adjusted path
+import useUiStore from '@/store/ui.store'; // Changed from useThemeStore
 
 const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const { mode } = useThemeStore();
-  const isAdult = mode === 'night';
-  const segment = isAdult ? 'adult' : 'general';
+  const { contentMode } = useUiStore(); // Changed from mode
+  const isNightlife = contentMode === 'nightlife';
+  // The concept of a 'segment' for API calls is retained, based on the content mode.
+  const segment = isNightlife ? 'adult' : 'general';
 
   const [newComment, setNewComment] = useState('');
   const [liked, setLiked] = useState(false);
@@ -24,8 +25,9 @@ const PostDetail = () => {
     () => id ? getPostById(id, segment) : Promise.resolve(null),
     {
       onSuccess: (data) => {
-        if (data) {
-          setLiked(data.likes > 0); // Example logic
+        if (data && user) {
+          // A more robust check for whether the current user has liked the post.
+          setLiked(data.likedBy?.includes(user.id) ?? false);
         }
       }
     }
@@ -54,12 +56,12 @@ const PostDetail = () => {
   const toggleLikeMutation = useMutation(
     (postId: string) => updatePostLike(postId, segment),
     {
-      onSuccess: (data) => {
-        queryClient.setQueryData(['post', id, segment], (oldData: Post | undefined) => 
-          oldData ? { ...oldData, likes: data.likes } : undefined
-        );
-        setLiked(prev => !prev); // Optimistic update of local state
-      }
+        onSuccess: (updatedPost) => {
+            queryClient.setQueryData(['post', id, segment], updatedPost);
+            if (user) {
+                setLiked(updatedPost.likedBy?.includes(user.id) ?? false);
+            }
+        }
     }
   );
 
@@ -71,7 +73,7 @@ const PostDetail = () => {
   };
 
   const handleLikeToggle = () => {
-    if (id) {
+    if (id && user) { // Ensure user is logged in to like
       toggleLikeMutation.mutate(id);
     }
   };
@@ -96,7 +98,7 @@ const PostDetail = () => {
           <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-8">{post.content}</p>
           <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
             <div className="flex items-center gap-4">
-              <button onClick={handleLikeToggle} className="flex items-center gap-2 hover:text-red-500 transition-colors">
+              <button onClick={handleLikeToggle} disabled={!user} className="flex items-center gap-2 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {liked ? <FaHeart className="text-red-500"/> : <FaRegHeart />}
                 <span>{post.likes} Likes</span>
               </button>
