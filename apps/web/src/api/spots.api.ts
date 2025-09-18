@@ -1,33 +1,7 @@
-
 import { api } from '../lib/api';
+import type { Spot, Review } from '@/types/spot';
 
-// Data Types
-export interface Spot {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  region: string;
-  city: string;
-  address: string;
-  operatingHours: string;
-  imageUrl: string; // This was the original single image
-  imageUrls: string[]; // Expanded to a gallery
-  rating: number;
-  latitude: number;
-  longitude: number;
-  isFavorited?: boolean; // Optional, as it depends on the user
-}
-
-export interface Review {
-  id: string;
-  spotId: string;
-  author: string;
-  avatar: string;
-  rating: number;
-  comment: string;
-  timestamp: string;
-}
+export type { Spot, Review };
 
 /**
  * Fetches all spots from the backend.
@@ -61,7 +35,7 @@ export const getSpotById = async (id: string): Promise<Spot | null> => {
   }
 };
 
-export const addSpot = async (spot: Omit<Spot, 'id' | 'rating' | 'isFavorited'>): Promise<Spot> => {
+export const addSpot = async (spot: Omit<Spot, 'id'>): Promise<Spot> => {
   const response = await api.post('/spots', spot);
   return response.data;
 };
@@ -87,21 +61,3 @@ export const addReview = async (spotId: string, rating: number, comment: string,
  */
 export const toggleFavoriteStatus = async (spotId: string, isFavorited: boolean): Promise<Spot> => {
   const response = await api.post(`/spots/${spotId}/favorite`, { isFavorited });
-  return response.data;
-};
-
-/**
- * Fetches featured spots.
- */
-export const fetchFeaturedSpots = async (): Promise<Spot[]> => {
-  const response = await api.get('/spots/featured');
-  return response.data;
-};
-
-/**
- * Fetches recommendations for a given spot.
- */
-export const getRecommendations = async (spotId: string): Promise<Spot[]> => {
-  const response = await api.get(`/spots/${spotId}/recommendations`);
-  return response.data;
-};

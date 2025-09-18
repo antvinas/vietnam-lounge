@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import { fetchSpots, fetchAdultSpots, Spot } from '@/api/spots.api'; // Adjusted path
 import useUiStore from '@/store/ui.store'; // Changed from useThemeStore
 import { FaMapMarkerAlt, FaStar, FaBuilding, FaUtensils, FaCoffee, FaTree, FaFilter, FaSortAmountDown } from 'react-icons/fa';
+import MapView from '@/components/common/MapView';
 
 const categoryStyles: { [key: string]: { icon: JSX.Element; color: string } } = {
   Landmark: { icon: <FaMapMarkerAlt />, color: 'bg-blue-500' },
@@ -29,21 +30,7 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
         <img src={spot.imageUrl} alt={spot.name} className="w-full h-56 object-cover rounded-t-lg" />
         <div className={`absolute top-0 right-0 text-white px-3 py-1 m-2 rounded-full text-sm font-semibold ${style.color}`}>
           {spot.region}
-        </div>
-      </div>
-      <div className="p-6">
-        <div className={`flex items-center text-sm mb-2 ${style.color.replace('bg', 'text')}`}>
-          {style.icon} <span className="ml-2 font-semibold">{spot.category}</span>
-        </div>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 truncate group-hover:text-primary transition-colors">{spot.name}</h3>
-        <p className="text-gray-700 dark:text-gray-400 mb-4 h-14 overflow-hidden text-ellipsis">{spot.description}</p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <FaStar className="text-yellow-400 mr-1" />
-            <span className="font-bold text-lg dark:text-white">{spot.rating.toFixed(1)}</span>
-          </div>
-          <span className="font-semibold text-primary">View Details</span>
-        </div>
+@@ -47,95 +48,165 @@ const SpotCard = ({ spot }: { spot: Spot }) => {
       </div>
     </Link>
   );
@@ -69,6 +56,8 @@ const SpotsHome = () => {
   const [filterRegion, setFilterRegion] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [sortBy, setSortBy] = useState('rating'); // 'rating' or 'name'
+  const [showOpenNow, setShowOpenNow] = useState(false);
+  const [showNearby, setShowNearby] = useState(false);
   const { contentMode } = useUiStore();
   const isNightlife = contentMode === 'nightlife';
 
@@ -77,17 +66,43 @@ const SpotsHome = () => {
     isNightlife ? fetchAdultSpots : fetchSpots
   );
 
+  const handleToggleOpenNow = () => setShowOpenNow(prev => !prev);
+  const handleToggleNearby = () => setShowNearby(prev => !prev);
+
   const filteredAndSortedSpots = useMemo(() => {
     if (!spots) return [];
     return spots
       .filter(spot => filterRegion === 'All' || spot.region === filterRegion)
       .filter(spot => filterCategory === 'All' || spot.category === filterCategory)
+      .filter(spot => {
+        if (!showOpenNow) return true;
+        const { isOpenNow } = spot as Spot & { isOpenNow?: boolean };
+        return isOpenNow ?? true;
+      })
+      .filter(spot => {
+        if (!showNearby) return true;
+        const { isNearby } = spot as Spot & { isNearby?: boolean };
+        return isNearby ?? true;
+      })
       .sort((a, b) => {
         if (sortBy === 'rating') return b.rating - a.rating;
         if (sortBy === 'name') return a.name.localeCompare(b.name);
         return 0;
       });
-  }, [spots, filterRegion, filterCategory, sortBy]);
+  }, [spots, filterRegion, filterCategory, sortBy, showOpenNow, showNearby]);
+
+  const mapViewSpots = useMemo(
+    () =>
+      filteredAndSortedSpots.map(spot => ({
+        id: spot.id,
+        name: spot.name,
+        location: {
+          lat: spot.latitude,
+          lng: spot.longitude,
+        },
+      })),
+    [filteredAndSortedSpots]
+  );
 
   const regions = useMemo(() => spots ? ['All', ...new Set(spots.map(s => s.region))] : ['All'], [spots]);
   const categories = useMemo(() => spots ? ['All', ...new Set(spots.map(s => s.category))] : ['All'], [spots]);
@@ -106,22 +121,42 @@ const SpotsHome = () => {
         <p className="text-xl text-gray-600 dark:text-gray-400 mt-4">{subtitle}</p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-4">
-          <FaFilter className="text-gray-600 dark:text-gray-300" />
-          <select value={filterRegion} onChange={e => setFilterRegion(e.target.value)} className="input-field">
-            {regions.map(r => <option key={r} value={r}>{r === 'All' ? 'All Regions' : r}</option>)}
-          </select>
-          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="input-field">
-            {categories.map(c => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
-          </select>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-8 flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <FaFilter className="text-gray-600 dark:text-gray-300" />
+            <select value={filterRegion} onChange={e => setFilterRegion(e.target.value)} className="input-field">
+              {regions.map(r => <option key={r} value={r}>{r === 'All' ? 'All Regions' : r}</option>)}
+            </select>
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="input-field">
+              {categories.map(c => <option key={c} value={c}>{c === 'All' ? 'All Categories' : c}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-4">
+            <FaSortAmountDown className="text-gray-600 dark:text-gray-300" />
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="input-field">
+              <option value="rating">Sort by Rating</option>
+              <option value="name">Sort by Name</option>
+            </select>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <FaSortAmountDown className="text-gray-600 dark:text-gray-300" />
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="input-field">
-            <option value="rating">Sort by Rating</option>
-            <option value="name">Sort by Name</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleToggleOpenNow}
+            data-active={showOpenNow}
+            className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:border-primary hover:text-primary data-[active=true]:bg-primary data-[active=true]:text-white"
+          >
+            오픈나우
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleNearby}
+            data-active={showNearby}
+            className="px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:border-primary hover:text-primary data-[active=true]:bg-primary data-[active=true]:text-white"
+          >
+            내 주변
+          </button>
         </div>
       </div>
 
@@ -134,6 +169,28 @@ const SpotsHome = () => {
           {filteredAndSortedSpots.map(spot => <SpotCard key={spot.id} spot={spot} />)}
         </div>
       )}
+
+      <section className="mt-12 space-y-6">
+        <MapView spots={mapViewSpots} />
+        <div className="flex flex-wrap justify-center gap-4">
+          <button
+            type="button"
+            onClick={handleToggleOpenNow}
+            data-active={showOpenNow}
+            className="px-5 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:border-primary hover:text-primary data-[active=true]:bg-primary data-[active=true]:text-white"
+          >
+            오픈나우
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleNearby}
+            data-active={showNearby}
+            className="px-5 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:border-primary hover:text-primary data-[active=true]:bg-primary data-[active=true]:text-white"
+          >
+            내 주변
+          </button>
+        </div>
+      </section>
     </main>
   );
 };
