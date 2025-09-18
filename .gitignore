@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependencies
 /node_modules
 **/node_modules
@@ -46,20 +45,14 @@ Thumbs.db
 
 # Turborepo
 .turbo
-=======
-# VS / VSCode
-.vs/
-.vscode/
 
-# Node
-node_modules/
+# Build (중복 제거 후 추가)
+/dist
+/build
+/out
+
+# Lock files
 package-lock.json
 
-# Build output
-dist/
-build/
-out/
-
-# 기타 불필요한 파일
-*.log
->>>>>>> 285d180 (first init commit)
+# Service Account Keys (❗️보안)
+serviceAccountKey.json
