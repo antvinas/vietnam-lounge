@@ -1,48 +1,44 @@
 import * as admin from 'firebase-admin';
+import { onRequest } from 'firebase-functions/v2/https'; // ✅ v2 API
+import express from 'express';
+import cors from 'cors';
+import { spotsRouter } from './api/spots';
+import { communityRouter } from './api/community';
 
-// Initialize Firebase Admin SDK (MUST BE AT THE TOP)
-if (admin.apps.length === 0) {
+// Emulator 환경 강제 설정
+if (process.env.FUNCTIONS_EMULATOR === 'true') {
+  console.log('EMULATOR DETECTED: Forcing FIRESTORE_EMULATOR_HOST environment variable.');
+  process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
+}
+
+// Firebase Admin 초기화 (한 번만)
+if (!admin.apps.length) {
   admin.initializeApp();
 }
 
-import * as functions from 'firebase-functions/v1';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-
-import { logger } from './utils/logger';
-import { communityRouter } from './api/community';
-import { spotsRouter } from './api/spots';
-import { adminRouter } from './api/admin';
-import { eventsRouter } from './api/events';
-import { usersRouter } from './api/users';
-import { uploadsRouter } from './api/uploads';
-import { handleCreateUser } from './triggers/auth';
-
-// Initialize Express app
 const app = express();
+app.use(cors({ origin: true }));
 
-// Middlewares
-app.use(helmet());
-app.use(cors({ origin: true })); // Configure for your specific domain in production
-app.use(express.json());
-
-// API Routers
-app.use('/community', communityRouter);
-app.use('/spots', spotsRouter);
-app.use('/admin', adminRouter);
-app.use('/events', eventsRouter);
-app.use('/users', usersRouter);
-app.use('/uploads', uploadsRouter);
-
-// Generic error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  logger.error('Unhandled error:', err);
-  res.status(500).send({ error: 'An unexpected error occurred.' });
+// Firebase ID token decode 미들웨어
+app.use(async (req, res, next) => {
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (idToken) {
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      (req as any).user = decodedToken;
+    } catch {
+      // invalid token은 무시
+    }
+  }
+  next();
 });
 
-// Expose the Express API as a single Cloud Function
-export const api = functions.https.onRequest(app);
+// 라우터 연결
+app.use('/spots', spotsRouter);
+app.use('/community', communityRouter);
 
-// --- Function Triggers ---
-export const onCreateUser = functions.region('asia-northeast3').auth.user().onCreate(handleCreateUser);
+// ✅ v2 API export
+export const api = onRequest(
+  { region: 'asia-northeast3' }, // 기존 functions.region() 대체
+  app
+);

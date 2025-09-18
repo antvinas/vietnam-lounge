@@ -36,44 +36,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onCreateUser = exports.api = void 0;
-const functions = __importStar(require("firebase-functions/v1"));
+exports.api = void 0;
 const admin = __importStar(require("firebase-admin"));
+const https_1 = require("firebase-functions/v2/https"); // ✅ v2 API
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const helmet_1 = __importDefault(require("helmet"));
-const logger_1 = require("./utils/logger");
-const community_1 = require("./api/community");
 const spots_1 = require("./api/spots");
-const admin_1 = require("./api/admin");
-const events_1 = require("./api/events");
-const users_1 = require("./api/users");
-const uploads_1 = require("./api/uploads");
-const auth_1 = require("./triggers/auth");
-// Initialize Firebase Admin SDK (safely)
-if (admin.apps.length === 0) {
+const community_1 = require("./api/community");
+// Emulator 환경 강제 설정
+if (process.env.FUNCTIONS_EMULATOR === 'true') {
+    console.log('EMULATOR DETECTED: Forcing FIRESTORE_EMULATOR_HOST environment variable.');
+    process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
+}
+// Firebase Admin 초기화 (한 번만)
+if (!admin.apps.length) {
     admin.initializeApp();
 }
-// Initialize Express app
 const app = (0, express_1.default)();
-// Middlewares
-app.use((0, helmet_1.default)());
-app.use((0, cors_1.default)({ origin: true })); // Configure for your specific domain in production
-app.use(express_1.default.json());
-// API Routers
-app.use('/community', community_1.communityRouter);
-app.use('/spots', spots_1.spotsRouter);
-app.use('/admin', admin_1.adminRouter);
-app.use('/events', events_1.eventsRouter);
-app.use('/users', users_1.usersRouter);
-app.use('/uploads', uploads_1.uploadsRouter);
-// Generic error handler
-app.use((err, req, res, next) => {
-    logger_1.logger.error('Unhandled error:', err);
-    res.status(500).send({ error: 'An unexpected error occurred.' });
+app.use((0, cors_1.default)({ origin: true }));
+// Firebase ID token decode 미들웨어
+app.use(async (req, res, next) => {
+    const idToken = req.headers.authorization?.split('Bearer ')[1];
+    if (idToken) {
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(idToken);
+            req.user = decodedToken;
+        }
+        catch {
+            // invalid token은 무시
+        }
+    }
+    next();
 });
-// Expose the Express API as a single Cloud Function
-exports.api = functions.https.onRequest(app);
-// --- Function Triggers ---
-exports.onCreateUser = functions.region('asia-northeast3').auth.user().onCreate(auth_1.handleCreateUser);
+// 라우터 연결
+app.use('/spots', spots_1.spotsRouter);
+app.use('/community', community_1.communityRouter);
+// ✅ v2 API export
+exports.api = (0, https_1.onRequest)({ region: 'asia-northeast3' }, // 기존 functions.region() 대체
+app);
 //# sourceMappingURL=index.js.map

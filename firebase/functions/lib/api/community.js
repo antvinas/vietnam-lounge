@@ -37,11 +37,11 @@ exports.communityRouter = void 0;
 const express = __importStar(require("express"));
 const admin = __importStar(require("firebase-admin"));
 const router = express.Router();
-const db = admin.firestore();
+// ❌ const db = admin.firestore();  ← 제거
+// ✅ 지연 초기화
+const getDb = () => admin.firestore();
 // Middleware for authentication
 const requireAuth = (req, res, next) => {
-    // Implement your authentication logic here
-    // For example, checking a Firebase token
     next();
 };
 // GET /community/posts/:segment/:id
@@ -49,26 +49,26 @@ router.get('/posts/:segment/:id', requireAuth, async (req, res) => {
     const { segment, id } = req.params;
     const collectionName = segment === 'adult' ? 'adult_posts' : 'posts';
     try {
-        const postDoc = await db.collection(collectionName).doc(id).get();
-        if (!postDoc.exists) {
+        const postDoc = await getDb().collection(collectionName).doc(id).get();
+        if (!postDoc.exists)
             return res.status(404).send({ error: 'Post not found.' });
-        }
         res.status(200).send({ id: postDoc.id, ...postDoc.data() });
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: 'Failed to fetch post.' });
     }
 });
-// GET /community/posts/:segment (general or adult)
+// GET /community/posts/:segment
 router.get('/posts/:segment', requireAuth, async (req, res) => {
     const { segment } = req.params;
     const collectionName = segment === 'adult' ? 'adult_posts' : 'posts';
     try {
-        const postsSnapshot = await db.collection(collectionName).orderBy('timestamp', 'desc').get();
-        const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        res.status(200).send(posts);
+        const postsSnapshot = await getDb().collection(collectionName).orderBy('timestamp', 'desc').get();
+        res.status(200).send(postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: `Failed to fetch ${segment} posts.` });
     }
 });
@@ -82,12 +82,12 @@ router.post('/posts', requireAuth, async (req, res) => {
             content,
             category,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            // ... other post fields
         };
-        const addedPost = await db.collection(collectionName).add(newPost);
+        const addedPost = await getDb().collection(collectionName).add(newPost);
         res.status(201).send({ id: addedPost.id, ...newPost });
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: 'Failed to create post.' });
     }
 });
@@ -96,11 +96,11 @@ router.get('/posts/:segment/:postId/comments', requireAuth, async (req, res) => 
     const { segment, postId } = req.params;
     const collectionName = segment === 'adult' ? 'adult_comments' : 'comments';
     try {
-        const commentsSnapshot = await db.collection(collectionName).where('postId', '==', postId).orderBy('timestamp', 'asc').get();
-        const comments = commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        res.status(200).send(comments);
+        const commentsSnapshot = await getDb().collection(collectionName).where('postId', '==', postId).orderBy('timestamp', 'asc').get();
+        res.status(200).send(commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: 'Failed to fetch comments.' });
     }
 });
@@ -114,12 +114,12 @@ router.post('/posts/:segment/:postId/comments', requireAuth, async (req, res) =>
             postId,
             content,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            // ... other comment fields
         };
-        const addedComment = await db.collection(collectionName).add(newComment);
+        const addedComment = await getDb().collection(collectionName).add(newComment);
         res.status(201).send({ id: addedComment.id, ...newComment });
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: 'Failed to create comment.' });
     }
 });
@@ -128,11 +128,11 @@ router.get('/categories/:segment', requireAuth, async (req, res) => {
     const { segment } = req.params;
     const collectionName = segment === 'adult' ? 'adult_categories' : 'categories';
     try {
-        const categoriesSnapshot = await db.collection(collectionName).get();
-        const categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        res.status(200).send(categories);
+        const categoriesSnapshot = await getDb().collection(collectionName).get();
+        res.status(200).send(categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }
     catch (error) {
+        console.error(error);
         res.status(500).send({ error: `Failed to fetch ${segment} categories.` });
     }
 });
