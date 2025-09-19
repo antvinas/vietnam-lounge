@@ -1,81 +1,48 @@
-import { createRequire } from "module";
-import admin from "firebase-admin";
 
-// ✅ JSON을 안전하게 import (ESM + ts-node 호환)
-const require = createRequire(import.meta.url);
-const serviceAccount = require("../../serviceAccountKey.json");
+import * as admin from 'firebase-admin';
+import { spots } from './data/spots'; // Reverted back to original import
 
-try {
-  if (admin.apps.length === 0) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    console.log("✅ Firebase Admin SDK initialized with Service Account");
-  }
-} catch (error) {
-  console.error("❌ SDK initialization failed:", error);
-  process.exit(1);
+// Initialize Firebase Admin SDK
+// When FIRESTORE_EMULATOR_HOST is set, the Admin SDK automatically connects to the emulator.
+// No credentials are needed for the emulator.
+console.log('Attempting to initialize Firebase Admin SDK...');
+if (process.env.FIRESTORE_EMULATOR_HOST) {
+    console.log(`Found FIRESTORE_EMULATOR_HOST: ${process.env.FIRESTORE_EMULATOR_HOST}`);
+    // Check if the app is already initialized to prevent errors on hot-reloads
+    if (!admin.apps.length) {
+        admin.initializeApp({
+            projectId: 'vietnam-lounge-471209', // Use the correct project ID for emulator
+        });
+        console.log('✅ Initialized Admin SDK in EMULATOR mode.');
+    }
+} else {
+    console.error('PRODUCTION MODE: Service account not configured. Seeding is only supported for emulators in this setup.');
+    process.exit(1);
 }
 
 const db = admin.firestore();
 
-interface Spot {
-  name: string;
-  description: string;
-  address: string;
-  rating: number;
-  imageUrl: string;
-}
-
 const seedSpots = async () => {
-  const spotsCollection = db.collection("spots");
-  console.log("🌱 Seeding spots...");
-
-  const spots: Spot[] = [
-    {
-      name: "Ben Thanh Market",
-      description:
-        "A large marketplace in the center of Ho Chi Minh City, Vietnam. One of the earliest surviving structures in Saigon.",
-      address: "Ben Thanh, District 1, Ho Chi Minh City, Vietnam",
-      rating: 4.2,
-      imageUrl: "https://picsum.photos/400/300?random=1",
-    },
-    {
-      name: "Cu Chi Tunnels",
-      description:
-        "An immense network of connecting tunnels located in the Củ Chi District of Ho Chi Minh City (Saigon), Vietnam.",
-      address: "Phu Hiep, Cu Chi, Ho Chi Minh City, Vietnam",
-      rating: 4.7,
-      imageUrl: "https://picsum.photos/400/300?random=2",
-    },
-    {
-      name: "War Remnants Museum",
-      description:
-        "A war museum at 28 Vo Van Tan, in District 3, Ho Chi Minh City, Vietnam.",
-      address: "28 Vo Van Tan, Ward 6, District 3, Ho Chi Minh City, Vietnam",
-      rating: 4.5,
-      imageUrl: "https://picsum.photos/400/300?random=3",
-    },
-    {
-      name: "Hoan Kiem Lake",
-      description:
-        "A freshwater lake in the historical center of Hanoi, the capital city of Vietnam.",
-      address: "Hang Trong, Hoan Kiem, Hanoi, Vietnam",
-      rating: 4.6,
-      imageUrl: "https://picsum.photos/400/300?random=4",
-    },
-  ];
+  console.log('🌱 Seeding spots...');
+  const spotsCollection = db.collection('spots');
 
   for (const spot of spots) {
     try {
-      await spotsCollection.add(spot);
+      const docRef = spotsCollection.doc(spot.id);
+      await docRef.set(spot);
       console.log(`✅ Added spot: ${spot.name}`);
     } catch (error) {
       console.error(`❌ Error adding spot ${spot.name}:`, error);
     }
   }
 
-  console.log("🎉 Spot seeding complete.");
+  console.log('🎉 Spot seeding complete.');
 };
 
-seedSpots().catch(console.error);
+seedSpots().then(() => {
+  console.log('Seeding finished, exiting...');
+  process.exit(0);
+}).catch(error => {
+  console.error('Unhandled error during seeding:', error);
+  process.exit(1);
+});
