@@ -1,0 +1,78 @@
+// Firebase Firestore Security Rules
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 🔹 Spots (읽기 전용)
+    match /spots/{spotId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 🔹 Community Posts (General)
+    match /community_posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+
+    // 🔹 Community Comments (General)
+    match /community_comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
+    }
+
+    // 🔹 Community Categories (General)
+    match /community_categories/{categoryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ---------------------------
+    // ✅ Adult (성인 전용, ageVerified claim 필수)
+    // ---------------------------
+    function isAdult() {
+      return request.auth != null && request.auth.token.ageVerified == true;
+    }
+
+    // 🔹 Adult Posts
+    match /adult_posts/{postId} {
+      allow read: if isAdult();
+      allow create: if isAdult();
+      allow update, delete: if isAdult() && request.auth.uid == resource.data.authorId;
+    }
+
+    // 🔹 Adult Comments
+    match /adult_comments/{commentId} {
+      allow read: if isAdult();
+      allow create: if isAdult();
+      allow update, delete: if isAdult() && request.auth.uid == resource.data.authorId;
+    }
+
+    // 🔹 Adult Categories
+    match /adult_categories/{categoryId} {
+      allow read: if isAdult();
+      allow write: if false;
+    }
+
+    // 🔹 Votes (General)
+    match /community_votes/{voteId} {
+      allow read: if true;
+      allow create, update: if request.auth != null;
+    }
+
+    // 🔹 Votes (Adult)
+    match /adult_votes/{voteId} {
+      allow read: if isAdult();
+      allow create, update: if isAdult();
+    }
+
+    // 🔹 Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

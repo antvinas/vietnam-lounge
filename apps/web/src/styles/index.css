@@ -1,0 +1,51 @@
+/* === [VIETNAM LOUNGE] THEME SYSTEM - Based on Design Guide === */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  
+  /* 1. Explorer Mode (Light, Default) */
+  :root,
+  [data-content-mode='explorer'] {
+    --color-primary: #2BB6C5; /* Mint */
+    --color-primary-hover: #26A3B2;
+    --color-background: #FFFFFF;
+    --color-background-sub: #F7FBFF;
+    --color-text-main: #1A1A1A;
+    --color-text-secondary: #6B7280;
+    --color-border: #e2e8f0; /* slate-200 */
+  }
+
+  /* 2. Nightlife Mode (Dark) */
+  [data-content-mode='nightlife'] {
+    --color-primary: #8B5CF6; /* Violet */
+    --color-primary-hover: #7C3AED;
+    --color-background: #0E1526;
+    --color-background-sub: #121826;
+    --color-text-main: #EAEAEA;
+    --color-text-secondary: #9CA3AF;
+    --color-border: #334155; /* slate-700 */
+  }
+
+  /* Base element styling from design guide */
+  body {
+    @apply bg-background text-text-main font-sans transition-colors duration-240;
+    /* Use theme() to apply values directly, avoiding @apply issues */
+    font-size: theme('fontSize.body[0]');
+    line-height: theme('fontSize.body[1].lineHeight');
+    font-weight: theme('fontSize.body[1].fontWeight');
+  }
+
+  /* 
+    Base typography for h1, h2, etc., is removed from here to prevent build errors.
+    These styles are applied directly in components using utility classes like `text-h1`, 
+    which is a more standard Tailwind CSS practice.
+  */
+
+  /* Universal border color */
+  * {
+    border-color: theme('colors.border');
+  }
+}
