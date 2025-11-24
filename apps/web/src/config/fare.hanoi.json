@@ -1,0 +1,18 @@
+{
+  "car": {
+    "base": 8000,
+    "per_km": 10000,
+    "per_min": 300,
+    "surge_min": 1.0,
+    "surge_max": 1.6,
+    "booking_fee": 3000
+  },
+  "bike": {
+    "base": 5000,
+    "per_km": 6000,
+    "per_min": 200,
+    "surge_min": 1.0,
+    "surge_max": 1.8,
+    "booking_fee": 2000
+  }
+}

@@ -1,0 +1,168 @@
+import type { PlanTemplate } from "@/types/plan.template";
+
+const tpl: PlanTemplate = {
+  meta: {
+    id: "hanoi-2n3d",
+    city: "Hanoi",
+    title: "하노이 2박3일 샘플",
+    nights: 2,
+    defaultMode: "car",
+    currency: "VND",
+    plannedBudgetVnd: 5500000,
+    summary: "호안끼엠·구시가지·문묘·호찌민 묘소·기차거리 알찬 시티 코스",
+  },
+  base: {
+    name: "Old Quarter 호텔",
+    location: { lat: 21.035, lng: 105.85 },
+  },
+  days: [
+    {
+      label: "DAY 1 · 도착 & 구시가지",
+      items: [
+        {
+          kind: "activity",
+          name: "노이바이 공항 도착 · 시내 이동",
+          location: { lat: 21.217, lng: 105.804 },
+          timeStartMin: 600,
+          timeEndMin: 690,
+          costVnd: 400000,
+        },
+        {
+          kind: "activity",
+          name: "호텔 체크인 · 짐 정리",
+          location: { lat: 21.035, lng: 105.85 },
+          timeStartMin: 690,
+          timeEndMin: 750,
+        },
+        {
+          kind: "meal",
+          name: "분짜 점심 (구시가지)",
+          location: { lat: 21.03, lng: 105.85 },
+          timeStartMin: 750,
+          timeEndMin: 810,
+          costVnd: 150000,
+        },
+        {
+          kind: "spot",
+          name: "호안끼엠 호수 · 응옥선 사당 산책",
+          location: { lat: 21.0287, lng: 105.8521 },
+          timeStartMin: 840,
+          timeEndMin: 960,
+          openMin: 360,
+          closeMin: 1320,
+        },
+        {
+          kind: "meal",
+          name: "에그커피 카페 휴식",
+          location: { lat: 21.0297, lng: 105.8499 },
+          timeStartMin: 960,
+          timeEndMin: 1050,
+          costVnd: 80000,
+        },
+        {
+          kind: "spot",
+          name: "타히엔 맥주거리 · 야시장",
+          location: { lat: 21.035, lng: 105.853 },
+          timeStartMin: 1140,
+          timeEndMin: 1290,
+        },
+      ],
+    },
+    {
+      label: "DAY 2 · 하노이 시티투어",
+      items: [
+        {
+          kind: "activity",
+          name: "호텔 조식 · 바딘 광장 이동",
+          location: { lat: 21.035, lng: 105.85 },
+          timeStartMin: 480,
+          timeEndMin: 540,
+        },
+        {
+          kind: "spot",
+          name: "호찌민 묘소 · 바딘 광장",
+          location: { lat: 21.0367, lng: 105.8347 },
+          timeStartMin: 540,
+          timeEndMin: 630,
+          openMin: 450,
+          closeMin: 630,
+        },
+        {
+          kind: "spot",
+          name: "일주사(한 기둥 사원)",
+          location: { lat: 21.0352, lng: 105.8345 },
+          timeStartMin: 630,
+          timeEndMin: 690,
+        },
+        {
+          kind: "meal",
+          name: "현지 쌀국수/점심",
+          location: { lat: 21.034, lng: 105.836 },
+          timeStartMin: 690,
+          timeEndMin: 750,
+          costVnd: 120000,
+        },
+        {
+          kind: "spot",
+          name: "문묘(국자감)",
+          location: { lat: 21.0274, lng: 105.8354 },
+          timeStartMin: 780,
+          timeEndMin: 900,
+          openMin: 480,
+          closeMin: 1020,
+        },
+        {
+          kind: "spot",
+          name: "성 요셉 성당 · 카페",
+          location: { lat: 21.0288, lng: 105.848 },
+          timeStartMin: 930,
+          timeEndMin: 1020,
+        },
+        {
+          kind: "spot",
+          name: "쭈옹가(Train Street) 카페",
+          location: { lat: 21.024, lng: 105.842 },
+          timeStartMin: 1110,
+          timeEndMin: 1200,
+        },
+      ],
+    },
+    {
+      label: "DAY 3 · 브런치 & 출국",
+      items: [
+        {
+          kind: "meal",
+          name: "브런치 카페 · 기념품 쇼핑",
+          location: { lat: 21.035, lng: 105.85 },
+          timeStartMin: 540,
+          timeEndMin: 630,
+          costVnd: 150000,
+        },
+        {
+          kind: "spot",
+          name: "구시가지 골목 산책",
+          location: { lat: 21.036, lng: 105.853 },
+          timeStartMin: 630,
+          timeEndMin: 720,
+        },
+        {
+          kind: "activity",
+          name: "체크아웃 · 공항 이동",
+          location: { lat: 21.035, lng: 105.85 },
+          timeStartMin: 720,
+          timeEndMin: 810,
+          costVnd: 350000,
+        },
+        {
+          kind: "activity",
+          name: "노이바이 공항 출발",
+          location: { lat: 21.217, lng: 105.804 },
+          timeStartMin: 870,
+          timeEndMin: 900,
+        },
+      ],
+    },
+  ],
+};
+
+export default tpl;

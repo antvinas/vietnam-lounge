@@ -1,0 +1,94 @@
+@import "./plan.css";
+@import "./spot.css";
+
+/* === VN Lounge Global === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 화면 전역 톤 + 시스템 다크 대응 + 기본 전환 */
+@layer base {
+  :root {
+    color-scheme: light dark;
+
+    --color-bg: 255 255 255;
+    --color-surface: 248 250 252;
+    --color-border: 226 232 240;
+
+    --text-main: 30 41 59;
+    --text-secondary: 71 85 105;
+  }
+
+  .dark {
+    --color-bg: 15 23 42;
+    --color-surface: 30 41 59;
+    --color-border: 51 65 85;
+
+    --text-main: 248 250 252;
+    --text-secondary: 203 213 225;
+  }
+
+  html,
+  body {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  body {
+    color: rgb(var(--text-main) / 1);
+    background-color: rgb(var(--color-bg) / 1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(16 185 129);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, transparent 76%, rgb(16 185 129));
+    color: currentColor;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .input-strong {
+    @apply h-11 w-full rounded-xl
+           border border-slate-300 dark:border-slate-600
+           bg-slate-100 dark:bg-slate-800
+           text-slate-800 dark:text-slate-100
+           px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0;
+  }
+  .input-strong::placeholder {
+    @apply text-slate-400 dark:text-slate-400;
+  }
+
+  .panel-surface {
+    @apply rounded-2xl border shadow-sm backdrop-blur
+           border-slate-200 bg-white
+           dark:border-slate-700 dark:bg-slate-900/90;
+  }
+
+  .list-card {
+    @apply grid grid-cols-[56px_1fr_auto] gap-3
+           min-h-[72px] rounded-xl border p-3 shadow-sm
+           border-slate-200 bg-white
+           dark:border-slate-700/70 dark:bg-slate-900/60;
+  }
+
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+  }
+}

@@ -1,0 +1,25 @@
+/* === Spot Page 전용 스타일 === */
+
+.spot-container { @apply relative w-full; }
+
+.spot-map { @apply rounded-2xl overflow-hidden border border-border bg-surface shadow-sm; }
+
+.spot-card:hover { @apply border-primary/40 shadow-md shadow-primary/10; }
+
+.spot-list-grid { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6; }
+
+/* 모바일 주소창 변동 대응: 100vh → 100dvh */
+.spot-sticky-map {
+  max-height: calc(100dvh - 6rem);
+  position: sticky;
+  top: 6rem;
+}
+
+.spot-section { @apply mt-8 mb-8 space-y-6; }
+
+/* 플로팅 위젯 보조 */
+.widget-fab { @apply fixed right-6 bottom-6 z-[10000] rounded-full shadow-lg border border-border bg-primary text-white px-5 py-3; }
+.widget-panel {
+  @apply fixed right-6 z-[10001] w-[min(92vw,380px)] max-h-[70vh] overflow-auto rounded-2xl border border-border bg-surface p-4 shadow-2xl;
+  bottom: 76px; /* FAB 높이 보정 */
+}

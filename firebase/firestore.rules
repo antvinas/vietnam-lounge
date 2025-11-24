@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 공개 읽기, 클라이언트 쓰기 금지 (Admin SDK는 규칙을 우회함)
+    match /spots/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /adult_spots/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 기본 거부
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
