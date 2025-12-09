@@ -1,0 +1,29 @@
+/* === Widget Tabs 스타일 === */
+
+.widget-tabs { @apply rounded-3xl bg-background-sub p-4 shadow-lg ring-1 ring-border/60; }
+
+.widget-tabs button { @apply inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition; }
+
+.widget-tabs button.active { @apply bg-primary text-white border-transparent shadow; }
+
+.widget-tabs button:hover:not(.active) { @apply bg-black/5 text-text-main; }
+
+/* === 개별 위젯 카드 === */
+
+.widget-card { @apply rounded-3xl bg-background-sub p-6 shadow-lg shadow-black/5 ring-1 ring-border/60; }
+
+.widget-card h3 { @apply text-lg font-semibold text-text-main; }
+
+.widget-card p { @apply text-sm text-text-secondary; }
+
+/* 플로팅 위젯 컨테이너 */
+.widget-floating {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+}
+
+@media (max-width: 768px) {
+  .widget-floating { bottom: 1rem; right: 1rem; }
+}

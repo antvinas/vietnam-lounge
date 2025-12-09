@@ -1,0 +1,181 @@
+/* 루트: Plan 페이지 공통 컨테이너 */
+.plan-root {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 요약바는 이미 sticky 처리되어 있음 */
+
+/* 반응형 레이아웃용 셸 컨테이너 */
+/* 기본값: 숨김 */
+.plan-shell-desktop,
+.plan-shell-tablet,
+.plan-shell-mobile {
+  display: none;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ===========================
+   Desktop (>= 1025px)
+   =========================== */
+@media (min-width: 1025px) {
+  .plan-shell-desktop {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ===========================
+   Tablet (640px ~ 1024px)
+   =========================== */
+@media (min-width: 640px) and (max-width: 1024px) {
+  .plan-shell-tablet {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ===========================
+   Mobile (< 640px)
+   =========================== */
+@media (max-width: 639px) {
+  .plan-shell-mobile {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ======================================================================== */
+/* Desktop: 2-컬럼 메인 레이아웃                                             */
+/* ======================================================================== */
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: clamp(320px, 28vw, 480px) minmax(0, 1fr);
+  gap: 0;
+  height: calc(100% - 48px); /* 요약바 높이에 맞게 조정 */
+}
+
+.plan-left {
+  border-right: 1px solid var(--plan-border, rgba(0, 0, 0, 0.06));
+  background: var(--plan-left-bg, transparent);
+  overflow: hidden;
+}
+
+.plan-right {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 오른쪽 컬럼(맵 등)은 자식이 전체 높이를 채우도록 */
+.plan-right > * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 좌측 컬럼 내부 스크롤 처리 */
+.plan-left > * {
+  height: 100%;
+  overflow: auto;
+}
+
+/* ======================================================================== */
+/* Tablet 레이아웃 보조: 상단 Map / 하단 2컬럼                               */
+/* ======================================================================== */
+
+.plan-tablet-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-tablet-map {
+  flex: 0 0 auto;
+  min-height: 260px;
+}
+
+.plan-tablet-bottom {
+  flex: 1 1 auto;
+  display: flex;
+  margin-top: 0.75rem;
+}
+
+.plan-tablet-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.plan-tablet-panel {
+  height: 100%;
+  overflow: auto;
+}
+
+/* ======================================================================== */
+/* 칩 스크롤 보조                                                            */
+/* ======================================================================== */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ======================================================================== */
+/* 검색 오버레이 레이아웃                                                   */
+/* ======================================================================== */
+
+/**
+ * PlanSearchOverlay와 같은 상단 모달형 검색 창 공통 레이아웃.
+ * - Tailwind의 max-w-3xl, top-10, rounded-xl 등을 CSS로도 한 번 더 정의
+ */
+
+.plan-search-overlay {
+  max-width: 768px;
+  width: min(100% - 24px, 768px);
+  margin: 2.5rem auto;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 5rem);
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.35),
+    0 0 0 1px rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+}
+
+.dark .plan-search-overlay {
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow:
+    0 22px 70px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(30, 64, 175, 0.45);
+}
+
+/* 헤더/하단 제외 본문 스크롤 영역 */
+.plan-search-results {
+  max-height: calc(100vh - 13rem);
+  overflow-y: auto;
+}
+
+/* 모바일에서 여백 조금 줄이기 */
+@media (max-width: 640px) {
+  .plan-search-overlay {
+    width: 100%;
+    margin: 1.5rem auto;
+    border-radius: 0.75rem;
+    max-height: calc(100vh - 3rem);
+  }
+  .plan-search-results {
+    max-height: calc(100vh - 11rem);
+  }
+}

@@ -1,0 +1,108 @@
+/* 공통 폼 토큰: 라이트/다크 모두 4.5:1 이상 대비 확보 */
+:root {
+  --form-fg: #111827;       /* text-gray-900 */
+  --form-bg: #ffffff;       /* white */
+  --form-muted: #4b5563;    /* text-gray-600 ~ 500보다 짙게 */
+  --form-border: #9ca3af;   /* gray-400 */
+  --form-ring: #111827;     /* focus ring */
+
+  /* 브랜드 */
+  --primary: #22c55e;
+  --primary-hover: #16a34a;
+}
+
+.dark {
+  --form-fg: #f3f4f6;       /* gray-100 */
+  --form-bg: #111827;       /* gray-900 */
+  --form-muted: #d1d5db;    /* gray-300 */
+  --form-border: #6b7280;   /* gray-500 */
+  --form-ring: #f3f4f6;
+
+  --primary: #22c55e;
+  --primary-hover: #22c55e; /* 다크에선 채도↓ 명도↑ 유지 */
+}
+
+/* 라벨 */
+.form-label {
+  font-size: 0.875rem;      /* 14px */
+  line-height: 1.25rem;
+  color: var(--form-fg);
+}
+
+/* 입력 */
+.form-input {
+  appearance: none;
+  background-color: var(--form-bg);
+  color: var(--form-fg);
+  border: 1px solid var(--form-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 2.5rem;
+  width: 100%;
+}
+
+/* placeholder도 충분한 대비로 */
+.form-input::placeholder {
+  color: var(--form-muted);
+  opacity: 1; /* 일부 브라우저 기본 반투명 제거 */
+}
+
+/* 포커스 링 */
+.form-input:focus,
+.btn:focus {
+  outline: 2px solid var(--form-ring);
+  outline-offset: 2px;
+}
+
+/* 도움말 텍스트 */
+.form-help {
+  font-size: 0.75rem;   /* 12px */
+  color: var(--form-muted);
+}
+
+/* 에러 상태 예시 */
+.form-error { border-color: #ef4444; }     /* red-500 */
+.form-error + .form-help { color: #ef4444; }
+
+/* UI 경계선 대비(3:1 이상) 확보용 보더 유틸 */
+.form-border { border-color: var(--form-border); }
+
+/* ===== 버튼 규격(서열 분리) ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 600;
+  padding: 0.625rem 1rem; /* 10px 16px */
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #ffffff;            /* 텍스트 대비 4.5:1 이상 유지 */
+  border-color: var(--primary);
+}
+.btn-primary:hover { background-color: var(--primary-hover); }
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--form-fg);
+  border-color: var(--form-border); /* UI 경계 3:1 목표 */
+}
+.btn-outline:hover { background: rgba(0,0,0,0.03); }
+
+.btn-link {
+  background: transparent;
+  color: var(--primary);
+  border-color: transparent;
+  padding: 0.5rem 0.25rem;
+  text-decoration: none;
+}
+.btn-link:hover { text-decoration: underline; }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -1,0 +1,21 @@
+{
+  "name": "firebase",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "seed": "ts-node scripts/seeds/index.ts",
+    "seed:emu": "cross-env FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 ts-node scripts/seeds/index.ts"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@types/uuid": "^8.3.4",
+    "firebase": "^12.6.0",
+    "firebase-admin": "^12.1.0",
+    "uuid": "8.3.2"
+  }
+}
