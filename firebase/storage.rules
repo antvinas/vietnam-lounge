@@ -1,0 +1,103 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function under10MB() {
+      return request.resource != null && request.resource.size < 10 * 1024 * 1024;
+    }
+
+    function under20MB() {
+      return request.resource != null && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    function isImage() {
+      return request.resource != null
+        && request.resource.contentType != null
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    function isDelete() {
+      return request.method == 'delete';
+    }
+
+    // -----------------------------
+    // Public media (read for everyone)
+    // - Write only by admin
+    // -----------------------------
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || under20MB());
+    }
+
+    match /spots/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || (isImage() && under10MB()));
+    }
+
+    match /adult_spots/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || (isImage() && under10MB()));
+    }
+
+    match /events/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || (isImage() && under10MB()));
+    }
+
+    match /adult_events/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || (isImage() && under10MB()));
+    }
+
+    match /sponsors/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (isDelete() || (isImage() && under10MB()));
+    }
+
+    // -----------------------------
+    // User media
+    // - Avatar: public read, owner write
+    // - Other user files: owner/admin read, owner write
+    // -----------------------------
+    match /users/{uid}/avatar/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(uid) && (isDelete() || (isImage() && under10MB()));
+    }
+
+    match /users/{uid}/{allPaths=**} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) && (isDelete() || under20MB());
+    }
+
+    // -----------------------------
+    // Admin-only area (optional)
+    // -----------------------------
+    match /admin/{allPaths=**} {
+      allow read: if isAdmin();
+      allow write: if isAdmin() && (isDelete() || under20MB());
+    }
+
+    // -----------------------------
+    // Default: deny
+    // -----------------------------
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

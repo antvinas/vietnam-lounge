@@ -1,0 +1,21 @@
+/* apps/web/src/index.css */
+/* 호환 레이어: main.tsx가 ./index.css를 import해도 깨지지 않게 */
+@import "./styles/index.css";
+
+@layer base {
+  /* ✅ Admin 화면은 항상 라이트 톤으로 강제 (스코프: .admin-root) */
+  .admin-root {
+    color-scheme: light;
+
+    /* VN Lounge tokens (light) 재정의: html.dark가 켜져 있어도 Admin 내부는 라이트 유지 */
+    --color-bg: 255 255 255;
+    --color-surface: 248 250 252;
+    --color-border: 226 232 240;
+
+    --text-main: 30 41 59;
+    --text-secondary: 71 85 105;
+
+    color: rgb(var(--text-main) / 1);
+  }
+}
+

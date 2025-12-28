@@ -1,0 +1,220 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.admin == true || request.auth.token.superAdmin == true);
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ✅ users 문서에서 '클라가 절대 건드리면 안 되는' 운영/권한 필드
+    function userAdminKeys() {
+      return [
+        "role",
+        "roles",
+        "isAdmin",
+        "status",
+        "adminMemo",
+        "bannedAt",
+        "deletedAt",
+        "deletedReason",
+        "deletedBy"
+      ];
+    }
+
+    function userAllowedCreateKeys() {
+      // 필요한 필드는 여기만 추가/관리 (화이트리스트)
+      return [
+        "uid",
+        "email",
+        "displayName",
+        "nickname",
+        "photoURL",
+        "phoneNumber",
+        "providerId",
+        "emailVerified",
+        "isAgeVerified",
+        "createdAt",
+        "updatedAt",
+        "lastLoginAt",
+        "emailLower",
+        "nicknameLower"
+      ];
+    }
+
+    function userAllowedUpdateKeys() {
+      // ✅ 본인 프로필에서 수정 가능(화이트리스트)
+      return [
+        "displayName",
+        "nickname",
+        "photoURL",
+        "phoneNumber",
+        "updatedAt"
+      ];
+    }
+
+    function userCreateAllowed() {
+      return request.resource.data.keys().hasOnly(userAllowedCreateKeys())
+        && request.resource.data.uid == request.auth.uid
+        && !request.resource.data.keys().hasAny(userAdminKeys());
+    }
+
+    function userUpdateAllowed() {
+      let changed = request.resource.data.diff(resource.data).changedKeys();
+      return changed.hasOnly(userAllowedUpdateKeys())
+        && !changed.hasAny(userAdminKeys());
+    }
+
+    // -----------------------------
+    // 0) Admin audit / system
+    // -----------------------------
+    match /admin_audit/{auditId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /_system/{docId} {
+      allow read, write: if false;
+    }
+
+    // -----------------------------
+    // 1) Spots (Explorer)
+    // -----------------------------
+    match /spots/{spotId} {
+      allow read: if true; // 누구나 정보 보기 가능
+      allow create, update, delete: if isAdmin(); // ✅ 관리자만 CRUD
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+
+        allow create: if isSignedIn()
+          && request.resource.data.userId == request.auth.uid;
+
+        allow update: if isAdmin()
+          || (
+            isSignedIn()
+            && resource.data.userId == request.auth.uid
+            && request.resource.data.userId == resource.data.userId
+          );
+
+        allow delete: if isAdmin()
+          || (isSignedIn() && resource.data.userId == request.auth.uid);
+      }
+    }
+
+    // -----------------------------
+    // 2) Spots (Nightlife)
+    // -----------------------------
+    match /adult_spots/{spotId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin(); // ✅ 관리자만 CRUD
+
+      match /reviews/{reviewId} {
+        allow read: if true;
+
+        allow create: if isSignedIn()
+          && request.resource.data.userId == request.auth.uid;
+
+        allow update: if isAdmin()
+          || (
+            isSignedIn()
+            && resource.data.userId == request.auth.uid
+            && request.resource.data.userId == resource.data.userId
+          );
+
+        allow delete: if isAdmin()
+          || (isSignedIn() && resource.data.userId == request.auth.uid);
+      }
+    }
+
+    // -----------------------------
+    // 3) Events (public read, admin write)
+    // -----------------------------
+    match /events/{eventId} {
+      function isLegacyEvent() {
+        // ✅ 과거 데이터(visibility/isPublic/status가 아예 없는 케이스) 마이그레이션 전 임시 허용
+        // - events는 admin만 생성/수정 가능하므로 악용 리스크는 낮음
+        return !resource.data.keys().hasAny(["visibility", "isPublic", "status"]);
+      }
+
+      function isPublicEvent() {
+        // ✅ 진짜 '비공개/임시저장'을 막기 위한 핵심
+        // - visibility: "public" | "private" (권장)
+        // - isPublic: boolean (레거시 호환)
+        // - legacy(필드 없음): 마이그레이션 완료 전까지 임시 허용
+        return resource.data.visibility == "public"
+          || resource.data.isPublic == true
+          || isLegacyEvent();
+      }
+
+      allow read: if isAdmin() || isPublicEvent();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /adult_events/{eventId} {
+      function isLegacyEvent() {
+        return !resource.data.keys().hasAny(["visibility", "isPublic", "status"]);
+      }
+
+      function isPublicEvent() {
+        return resource.data.visibility == "public"
+          || resource.data.isPublic == true
+          || isLegacyEvent();
+      }
+
+      allow read: if isAdmin() || isPublicEvent();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // -----------------------------
+    // 4) Users (my page, favorites)
+    // -----------------------------
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isAdmin();
+
+      // ✅ 본인 프로필 문서 생성/수정은 허용하되, 운영/권한 필드는 클라에서 write 불가
+      allow create: if isSelf(userId) && userCreateAllowed();
+      allow update: if isSelf(userId) && userUpdateAllowed();
+
+      // 계정 삭제(탈퇴) - 필요 없으면 false로 바꿔도 됨
+      allow delete: if isSelf(userId);
+
+      match /favorites/{favId} {
+        allow read, write: if isSelf(userId);
+      }
+    }
+
+    // -----------------------------
+    // 5) Sponsor Requests
+    // -----------------------------
+    match /sponsorRequests/{requestId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // -----------------------------
+    // 6) Reports
+    // -----------------------------
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // -----------------------------
+    // 7) Default: deny
+    // -----------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,74 @@
+/* Design Tokens — 8px 스페이싱/대비 상향 */
+
+:root {
+  /* Brand */
+  --primary: #22c55e;
+  --primary-hover: #16a34a;
+
+  /* Spacing (8px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* Surfaces */
+  --bg-background: #ffffff;
+  --bg-background-sub: #f6f8fb;
+  --bg-surface: #ffffff;
+
+  /* Text */
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+
+  /* Border */
+  --border: #e2e8f0;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  --shadow-hover: 0 4px 16px rgba(0,0,0,.12);
+  --shadow-depth: 0 6px 28px rgba(0,0,0,.18);
+  --shadow-depth-lg: 0 10px 40px rgba(0,0,0,.22);
+}
+
+.dark {
+  --primary: #22c55e;
+  --primary-hover: #16a34a;
+
+  --bg-background: #0b1220;
+  --bg-background-sub: #111a2b;
+  --bg-surface: #0f1729;
+
+  /* 다크 대비 상향(AA 목표) */
+  --text-main: #e5e7eb;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #a7b2c4;
+
+  --border: #344155;
+
+  --shadow-card: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  --shadow-hover: 0 6px 22px rgba(0,0,0,.5);
+  --shadow-depth: 0 8px 30px rgba(0,0,0,.55);
+  --shadow-depth-lg: 0 12px 48px rgba(0,0,0,.65);
+}
+
+/* Helpers */
+.bg-background { background-color: var(--bg-background); }
+.bg-background-sub { background-color: var(--bg-background-sub); }
+.bg-surface { background-color: var(--bg-surface); }
+
+.text-text-main { color: var(--text-main); }
+.text-text-secondary { color: var(--text-secondary); }
+.text-text-tertiary { color: var(--text-tertiary); }
+
+.border-border { border-color: var(--border); }
+.text-primary { color: var(--primary); }
+.bg-primary { background-color: var(--primary); }
+.bg-primary-hover { background-color: var(--primary-hover); }
+
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-hover { box-shadow: var(--shadow-hover); }
+.shadow-depth { box-shadow: var(--shadow-depth); }
+.shadow-depth-lg { box-shadow: var(--shadow-depth-lg); }

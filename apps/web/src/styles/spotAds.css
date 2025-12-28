@@ -1,0 +1,45 @@
+/* 공통 배지 */
+.sponsor-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #111;
+  background: linear-gradient(90deg, #ffd166, #fca5a5);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* 프리미엄 글로우 */
+.premium-glow { position: relative; }
+.premium-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: conic-gradient(from 180deg, rgba(255,215,0,0.35), rgba(255,105,180,0.35), rgba(147,197,253,0.35), rgba(255,215,0,0.35));
+  filter: blur(16px);
+  opacity: 0.45;
+  border-radius: 16px;
+  animation: glow-rotate 8s linear infinite;
+}
+
+/* 다크모드 대비 */
+:root.dark .sponsor-badge {
+  color: #fff;
+  background: linear-gradient(90deg, #a78bfa, #f472b6);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* 스크롤바 제거 유틸 */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* 애니메이션 */
+@keyframes glow-rotate {
+  0% { transform: rotate(0deg); opacity: 0.35; }
+  50% { opacity: 0.55; }
+  100% { transform: rotate(360deg); opacity: 0.35; }
+}
